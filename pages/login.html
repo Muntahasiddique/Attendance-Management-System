@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FaceGuard - Authentication Gateway</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            background: '#0a0a0b',
+            foreground: '#fafafa',
+            card: '#141417',
+            border: '#27272a',
+            muted: '#71717a',
+            primary: '#10b981',
+            danger: '#ef4444',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+  </style>
+</head>
+<body class="bg-background min-h-screen flex items-center justify-center p-4">
+  <!-- Background Grid Pattern -->
+  <div class="fixed inset-0 opacity-5">
+    <div class="absolute inset-0" style="background-image: linear-gradient(#27272a 1px, transparent 1px), linear-gradient(90deg, #27272a 1px, transparent 1px); background-size: 50px 50px;"></div>
+  </div>
+
+  <div class="relative z-10 w-full max-w-md">
+    <!-- Logo -->
+    <div class="text-center mb-8">
+      <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-card border border-border mb-4">
+        <svg class="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+        </svg>
+      </div>
+      <h1 class="text-2xl font-bold text-foreground">FaceGuard</h1>
+      <p class="text-muted text-sm mt-1">Biometric Attendance System</p>
+    </div>
+
+    <!-- Login Card -->
+    <div class="bg-card border border-border rounded-xl p-8">
+      <div class="mb-6">
+        <h2 class="text-xl font-semibold text-foreground">Authentication Gateway</h2>
+        <p class="text-muted text-sm mt-1">Enter your credentials to access the system</p>
+      </div>
+
+      <form id="loginForm" class="space-y-5">
+        <!-- Email -->
+        <div>
+          <label class="block text-sm font-medium text-foreground mb-2">Email Address</label>
+          <input 
+            type="email" 
+            id="email"
+            placeholder="admin@company.com"
+            class="w-full px-4 py-3 bg-background border border-border rounded-lg text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+          >
+        </div>
+
+        <!-- Password -->
+        <div>
+          <label class="block text-sm font-medium text-foreground mb-2">Password</label>
+          <div class="relative">
+            <input 
+              type="password" 
+              id="password"
+              placeholder="••••••••"
+              class="w-full px-4 py-3 bg-background border border-border rounded-lg text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+            >
+            <button type="button" onclick="togglePassword()" class="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-foreground">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Role Selection -->
+        <div>
+          <label class="block text-sm font-medium text-foreground mb-2">Access Role</label>
+          <select id="role" class="w-full px-4 py-3 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
+            <option value="admin">Administrator</option>
+            <option value="guard">Security Guard</option>
+            <option value="monitor">Monitor</option>
+          </select>
+        </div>
+
+        <!-- Remember Me -->
+        <div class="flex items-center justify-between">
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" class="w-4 h-4 rounded border-border bg-background text-primary focus:ring-primary">
+            <span class="text-sm text-muted">Remember this device</span>
+          </label>
+          <a href="#" class="text-sm text-primary hover:underline">Forgot password?</a>
+        </div>
+
+        <!-- Submit -->
+        <button 
+          type="submit"
+          class="w-full py-3 px-4 bg-primary text-background font-semibold rounded-lg hover:bg-primary/90 transition-all flex items-center justify-center gap-2"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
+          </svg>
+          Authenticate
+        </button>
+      </form>
+
+      <!-- Error Message -->
+      <div id="errorMsg" class="hidden mt-4 p-3 bg-danger/10 border border-danger/20 rounded-lg text-danger text-sm">
+        Invalid credentials. Please try again.
+      </div>
+    </div>
+
+    <!-- Security Notice -->
+    <div class="mt-6 flex items-center justify-center gap-2 text-muted text-xs">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+      </svg>
+      <span>256-bit SSL Encrypted Connection</span>
+    </div>
+  </div>
+
+  <script>
+    function togglePassword() {
+      const input = document.getElementById('password');
+      input.type = input.type === 'password' ? 'text' : 'password';
+    }
+
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const role = document.getElementById('role').value;
+      
+      // Simulate authentication and RBAC redirect
+      if (role === 'admin') {
+        window.location.href = 'dashboard.html';
+      } else {
+        window.location.href = 'terminal.html';
+      }
+    });
+  </script>
+</body>
+</html>

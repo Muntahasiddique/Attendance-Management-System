@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Command Dashboard - FaceGuard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            background: '#0a0a0b',
+            foreground: '#fafafa',
+            card: '#141417',
+            border: '#27272a',
+            muted: '#71717a',
+            primary: '#10b981',
+            warning: '#f59e0b',
+            danger: '#ef4444',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .pulse-dot { animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+  </style>
+</head>
+<body class="bg-background min-h-screen">
+  <!-- Sidebar -->
+  <aside class="fixed left-0 top-0 h-full w-64 bg-card border-r border-border p-4 flex flex-col">
+    <!-- Logo -->
+    <div class="flex items-center gap-3 mb-8 px-2">
+      <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+        <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+        </svg>
+      </div>
+      <div>
+        <h1 class="font-bold text-foreground">FaceGuard</h1>
+        <p class="text-xs text-muted">Admin Console</p>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="flex-1 space-y-1">
+      <a href="dashboard.html" class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/10 text-primary font-medium">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
+        </svg>
+        Dashboard
+      </a>
+      <a href="enrollment.html" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-muted hover:text-foreground hover:bg-card transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+        </svg>
+        Enrollment
+      </a>
+      <a href="reports.html" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-muted hover:text-foreground hover:bg-card transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+        Reports
+      </a>
+      <a href="terminal.html" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-muted hover:text-foreground hover:bg-card transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+        </svg>
+        Live Terminal
+      </a>
+      <a href="settings.html" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-muted hover:text-foreground hover:bg-card transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+        </svg>
+        Settings
+      </a>
+    </nav>
+
+    <!-- User -->
+    <div class="border-t border-border pt-4 mt-4">
+      <div class="flex items-center gap-3 px-2">
+        <div class="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center text-primary font-semibold">A</div>
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-medium text-foreground truncate">Admin User</p>
+          <p class="text-xs text-muted truncate">admin@company.com</p>
+        </div>
+        <a href="login.html" class="text-muted hover:text-foreground">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="ml-64 p-8">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-8">
+      <div>
+        <h1 class="text-2xl font-bold text-foreground">Command Dashboard</h1>
+        <p class="text-muted mt-1">Real-time attendance monitoring</p>
+      </div>
+      <div class="flex items-center gap-4">
+        <div class="flex items-center gap-2 px-3 py-2 bg-card border border-border rounded-lg">
+          <span class="w-2 h-2 bg-primary rounded-full pulse-dot"></span>
+          <span class="text-sm text-foreground">System Online</span>
+        </div>
+        <div class="text-right">
+          <p class="text-sm font-medium text-foreground" id="currentTime">09:15:32 AM</p>
+          <p class="text-xs text-muted" id="currentDate">November 30, 2025</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <!-- Total Present -->
+      <div class="bg-card border border-border rounded-xl p-6">
+        <div class="flex items-center justify-between mb-4">
+          <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+            <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          <span class="text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded-full">+12%</span>
+        </div>
+        <p class="text-3xl font-bold text-foreground" id="presentCount">847</p>
+        <p class="text-sm text-muted mt-1">Total Present</p>
+      </div>
+
+      <!-- Total Absent -->
+      <div class="bg-card border border-border rounded-xl p-6">
+        <div class="flex items-center justify-between mb-4">
+          <div class="w-12 h-12 rounded-xl bg-danger/10 flex items-center justify-center">
+            <svg class="w-6 h-6 text-danger" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          <span class="text-xs font-medium text-danger bg-danger/10 px-2 py-1 rounded-full">-3%</span>
+        </div>
+        <p class="text-3xl font-bold text-foreground">53</p>
+        <p class="text-sm text-muted mt-1">Total Absent</p>
+      </div>
+
+      <!-- Late Arrivals -->
+      <div class="bg-card border border-border rounded-xl p-6">
+        <div class="flex items-center justify-between mb-4">
+          <div class="w-12 h-12 rounded-xl bg-warning/10 flex items-center justify-center">
+            <svg class="w-6 h-6 text-warning" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          <span class="text-xs font-medium text-warning bg-warning/10 px-2 py-1 rounded-full">+5</span>
+        </div>
+        <p class="text-3xl font-bold text-foreground">28</p>
+        <p class="text-sm text-muted mt-1">Late Arrivals</p>
+      </div>
+
+      <!-- Enrolled Users -->
+      <div class="bg-card border border-border rounded-xl p-6">
+        <div class="flex items-center justify-between mb-4">
+          <div class="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center">
+            <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+            </svg>
+          </div>
+        </div>
+        <p class="text-3xl font-bold text-foreground">900</p>
+        <p class="text-sm text-muted mt-1">Enrolled Users</p>
+      </div>
+    </div>
+
+    <!-- Charts and Activity -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Attendance Chart -->
+      <div class="lg:col-span-2 bg-card border border-border rounded-xl p-6">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h3 class="font-semibold text-foreground">Weekly Attendance</h3>
+            <p class="text-sm text-muted">Last 7 days overview</p>
+          </div>
+          <select class="px-3 py-2 bg-background border border-border rounded-lg text-sm text-foreground">
+            <option>This Week</option>
+            <option>Last Week</option>
+            <option>This Month</option>
+          </select>
+        </div>
+        <!-- Simple Bar Chart -->
+        <div class="flex items-end justify-between h-48 gap-4">
+          <div class="flex-1 flex flex-col items-center gap-2">
+            <div class="w-full bg-primary rounded-t-lg" style="height: 85%"></div>
+            <span class="text-xs text-muted">Mon</span>
+          </div>
+          <div class="flex-1 flex flex-col items-center gap-2">
+            <div class="w-full bg-primary rounded-t-lg" style="height: 92%"></div>
+            <span class="text-xs text-muted">Tue</span>
+          </div>
+          <div class="flex-1 flex flex-col items-center gap-2">
+            <div class="w-full bg-primary rounded-t-lg" style="height: 78%"></div>
+            <span class="text-xs text-muted">Wed</span>
+          </div>
+          <div class="flex-1 flex flex-col items-center gap-2">
+            <div class="w-full bg-primary rounded-t-lg" style="height: 95%"></div>
+            <span class="text-xs text-muted">Thu</span>
+          </div>
+          <div class="flex-1 flex flex-col items-center gap-2">
+            <div class="w-full bg-primary rounded-t-lg" style="height: 88%"></div>
+            <span class="text-xs text-muted">Fri</span>
+          </div>
+          <div class="flex-1 flex flex-col items-center gap-2">
+            <div class="w-full bg-primary/30 rounded-t-lg" style="height: 45%"></div>
+            <span class="text-xs text-muted">Sat</span>
+          </div>
+          <div class="flex-1 flex flex-col items-center gap-2">
+            <div class="w-full bg-primary/30 rounded-t-lg" style="height: 20%"></div>
+            <span class="text-xs text-muted">Sun</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Activity -->
+      <div class="bg-card border border-border rounded-xl p-6">
+        <div class="flex items-center justify-between mb-6">
+          <h3 class="font-semibold text-foreground">Recent Activity</h3>
+          <span class="w-2 h-2 bg-primary rounded-full pulse-dot"></span>
+        </div>
+        <div class="space-y-4" id="activityFeed">
+          <div class="flex items-center gap-3 p-3 bg-background rounded-lg">
+            <div class="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary text-sm font-semibold">JD</div>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium text-foreground truncate">John Doe</p>
+              <p class="text-xs text-muted">Checked in • 9:12 AM</p>
+            </div>
+            <span class="w-2 h-2 bg-primary rounded-full"></span>
+          </div>
+          <div class="flex items-center gap-3 p-3 bg-background rounded-lg">
+            <div class="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-500 text-sm font-semibold">SM</div>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium text-foreground truncate">Sarah Miller</p>
+              <p class="text-xs text-muted">Checked in • 9:10 AM</p>
+            </div>
+            <span class="w-2 h-2 bg-primary rounded-full"></span>
+          </div>
+          <div class="flex items-center gap-3 p-3 bg-background rounded-lg">
+            <div class="w-10 h-10 rounded-full bg-warning/20 flex items-center justify-center text-warning text-sm font-semibold">MJ</div>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium text-foreground truncate">Mike Johnson</p>
+              <p class="text-xs text-warning">Late • 9:22 AM</p>
+            </div>
+            <span class="w-2 h-2 bg-warning rounded-full"></span>
+          </div>
+          <div class="flex items-center gap-3 p-3 bg-background rounded-lg">
+            <div class="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary text-sm font-semibold">EW</div>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium text-foreground truncate">Emily Wang</p>
+              <p class="text-xs text-muted">Checked in • 9:05 AM</p>
+            </div>
+            <span class="w-2 h-2 bg-primary rounded-full"></span>
+          </div>
+        </div>
+        <a href="reports.html" class="mt-4 block text-center text-sm text-primary hover:underline">View All Activity →</a>
+      </div>
+    </div>
+
+    <!-- Department Breakdown -->
+    <div class="mt-6 bg-card border border-border rounded-xl p-6">
+      <h3 class="font-semibold text-foreground mb-6">Department Breakdown</h3>
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead>
+            <tr class="border-b border-border">
+              <th class="text-left py-3 px-4 text-sm font-medium text-muted">Department</th>
+              <th class="text-left py-3 px-4 text-sm font-medium text-muted">Total</th>
+              <th class="text-left py-3 px-4 text-sm font-medium text-muted">Present</th>
+              <th class="text-left py-3 px-4 text-sm font-medium text-muted">Absent</th>
+              <th class="text-left py-3 px-4 text-sm font-medium text-muted">Rate</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-border">
+            <tr>
+              <td class="py-3 px-4 text-sm text-foreground">Engineering</td>
+              <td class="py-3 px-4 text-sm text-muted">250</td>
+              <td class="py-3 px-4 text-sm text-primary">238</td>
+              <td class="py-3 px-4 text-sm text-danger">12</td>
+              <td class="py-3 px-4">
+                <div class="flex items-center gap-2">
+                  <div class="flex-1 h-2 bg-background rounded-full overflow-hidden">
+                    <div class="h-full bg-primary rounded-full" style="width: 95%"></div>
+                  </div>
+                  <span class="text-sm text-foreground">95%</span>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td class="py-3 px-4 text-sm text-foreground">Marketing</td>
+              <td class="py-3 px-4 text-sm text-muted">150</td>
+              <td class="py-3 px-4 text-sm text-primary">142</td>
+              <td class="py-3 px-4 text-sm text-danger">8</td>
+              <td class="py-3 px-4">
+                <div class="flex items-center gap-2">
+                  <div class="flex-1 h-2 bg-background rounded-full overflow-hidden">
+                    <div class="h-full bg-primary rounded-full" style="width: 94%"></div>
+                  </div>
+                  <span class="text-sm text-foreground">94%</span>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td class="py-3 px-4 text-sm text-foreground">Operations</td>
+              <td class="py-3 px-4 text-sm text-muted">300</td>
+              <td class="py-3 px-4 text-sm text-primary">275</td>
+              <td class="py-3 px-4 text-sm text-danger">25</td>
+              <td class="py-3 px-4">
+                <div class="flex items-center gap-2">
+                  <div class="flex-1 h-2 bg-background rounded-full overflow-hidden">
+                    <div class="h-full bg-primary rounded-full" style="width: 91%"></div>
+                  </div>
+                  <span class="text-sm text-foreground">91%</span>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td class="py-3 px-4 text-sm text-foreground">Human Resources</td>
+              <td class="py-3 px-4 text-sm text-muted">200</td>
+              <td class="py-3 px-4 text-sm text-primary">192</td>
+              <td class="py-3 px-4 text-sm text-danger">8</td>
+              <td class="py-3 px-4">
+                <div class="flex items-center gap-2">
+                  <div class="flex-1 h-2 bg-background rounded-full overflow-hidden">
+                    <div class="h-full bg-primary rounded-full" style="width: 96%"></div>
+                  </div>
+                  <span class="text-sm text-foreground">96%</span>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // Update time
+    function updateTime() {
+      const now = new Date();
+      document.getElementById('currentTime').textContent = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      document.getElementById('currentDate').textContent = now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    }
+    setInterval(updateTime, 1000);
+    updateTime();
+
+    // Simulate live updates
+    let presentCount = 847;
+    setInterval(() => {
+      if (Math.random() > 0.7) {
+        presentCount++;
+        document.getElementById('presentCount').textContent = presentCount;
+      }
+    }, 5000);
+  </script>
+</body>
+</html>

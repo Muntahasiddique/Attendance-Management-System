@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>System Configuration - FaceGuard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            background: '#0a0a0b',
+            foreground: '#fafafa',
+            card: '#141417',
+            border: '#27272a',
+            muted: '#71717a',
+            primary: '#10b981',
+            warning: '#f59e0b',
+            danger: '#ef4444',
+          }
+        }
+      }
+    }
+  </script>
+  <style>body { font-family: 'Inter', sans-serif; }</style>
+</head>
+<body class="bg-background min-h-screen">
+  <!-- Sidebar -->
+  <aside class="fixed left-0 top-0 h-full w-64 bg-card border-r border-border p-4 flex flex-col">
+    <div class="flex items-center gap-3 mb-8 px-2">
+      <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+        <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+        </svg>
+      </div>
+      <div>
+        <h1 class="font-bold text-foreground">FaceGuard</h1>
+        <p class="text-xs text-muted">Admin Console</p>
+      </div>
+    </div>
+
+    <nav class="flex-1 space-y-1">
+      <a href="dashboard.html" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-muted hover:text-foreground hover:bg-card transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
+        </svg>
+        Dashboard
+      </a>
+      <a href="enrollment.html" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-muted hover:text-foreground hover:bg-card transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+        </svg>
+        Enrollment
+      </a>
+      <a href="reports.html" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-muted hover:text-foreground hover:bg-card transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+        </svg>
+        Reports
+      </a>
+      <a href="terminal.html" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-muted hover:text-foreground hover:bg-card transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+        </svg>
+        Live Terminal
+      </a>
+      <a href="settings.html" class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/10 text-primary font-medium">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+        </svg>
+        Settings
+      </a>
+    </nav>
+
+    <div class="border-t border-border pt-4 mt-4">
+      <div class="flex items-center gap-3 px-2">
+        <div class="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center text-primary font-semibold">A</div>
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-medium text-foreground truncate">Admin User</p>
+          <p class="text-xs text-muted truncate">admin@company.com</p>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="ml-64 p-8">
+    <div class="mb-8">
+      <h1 class="text-2xl font-bold text-foreground">System Configuration</h1>
+      <p class="text-muted mt-1">Adjust technical parameters and system settings</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- Camera Settings -->
+      <div class="bg-card border border-border rounded-xl p-6">
+        <div class="flex items-center gap-3 mb-6">
+          <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+            <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="font-semibold text-foreground">Camera Settings</h3>
+            <p class="text-sm text-muted">Configure video input sources</p>
+          </div>
+        </div>
+
+        <div class="space-y-5">
+          <div>
+            <label class="block text-sm font-medium text-foreground mb-2">Active Camera</label>
+            <select id="cameraSelect" class="w-full px-4 py-3 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+              <option value="webcam">Built-in Webcam (Default)</option>
+              <option value="usb">USB Camera - Logitech C920</option>
+              <option value="ip1">IP Camera - 192.168.1.100</option>
+              <option value="ip2">IP Camera - 192.168.1.101</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-foreground mb-2">Resolution</label>
+            <select class="w-full px-4 py-3 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+              <option value="1080p">1920 x 1080 (Full HD)</option>
+              <option value="720p">1280 x 720 (HD)</option>
+              <option value="480p">854 x 480 (SD)</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-foreground mb-2">IP Camera URL</label>
+            <input type="text" placeholder="rtsp://192.168.1.100:554/stream" class="w-full px-4 py-3 bg-background border border-border rounded-lg text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+          </div>
+
+          <button onclick="testCamera()" class="w-full py-3 px-4 bg-background border border-border text-foreground font-medium rounded-lg hover:bg-card transition-all flex items-center justify-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+            </svg>
+            Test Camera Connection
+          </button>
+        </div>
+      </div>
+
+      <!-- Time Settings -->
+      <div class="bg-card border border-border rounded-xl p-6">
+        <div class="flex items-center gap-3 mb-6">
+          <div class="w-10 h-10 rounded-xl bg-warning/10 flex items-center justify-center">
+            <svg class="w-5 h-5 text-warning" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="font-semibold text-foreground">Time Settings</h3>
+            <p class="text-sm text-muted">Configure attendance time rules</p>
+          </div>
+        </div>
+
+        <div class="space-y-5">
+          <div>
+            <label class="block text-sm font-medium text-foreground mb-2">Work Start Time</label>
+            <input type="time" value="09:00" class="w-full px-4 py-3 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-foreground mb-2">Late Time Cutoff</label>
+            <input type="time" value="09:15" id="lateTime" class="w-full px-4 py-3 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+            <p class="text-xs text-muted mt-2">Arrivals after this time will be marked as "Late"</p>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-foreground mb-2">Work End Time</label>
+            <input type="time" value="17:00" class="w-full px-4 py-3 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-foreground mb-2">Timezone</label>
+            <select class="w-full px-4 py-3 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+              <option value="UTC-5">Eastern Time (UTC-5)</option>
+              <option value="UTC-6">Central Time (UTC-6)</option>
+              <option value="UTC-7">Mountain Time (UTC-7)</option>
+              <option value="UTC-8">Pacific Time (UTC-8)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- AI Recognition Settings -->
+      <div class="bg-card border border-border rounded-xl p-6">
+        <div class="flex items-center gap-3 mb-6">
+          <div class="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
+            <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="font-semibold text-foreground">AI Recognition</h3>
+            <p class="text-sm text-muted">Adjust matching algorithm parameters</p>
+          </div>
+        </div>
+
+        <div class="space-y-5">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <label class="text-sm font-medium text-foreground">Matching Threshold</label>
+              <span class="text-sm text-primary font-mono" id="thresholdValue">0.75</span>
+            </div>
+            <input type="range" min="0.5" max="0.95" step="0.05" value="0.75" id="threshold" class="w-full h-2 bg-background rounded-lg appearance-none cursor-pointer accent-primary" oninput="updateThreshold(this.value)">
+            <div class="flex justify-between text-xs text-muted mt-2">
+              <span>Lenient (0.50)</span>
+              <span>Strict (0.95)</span>
+            </div>
+            <p class="text-xs text-muted mt-3 p-3 bg-background rounded-lg">
+              <strong class="text-foreground">Note:</strong> Higher values require closer face matches but may reject valid users. Lower values are more permissive but may allow false positives.
+            </p>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-foreground mb-2">Detection Model</label>
+            <select class="w-full px-4 py-3 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+              <option value="hog">HOG (Faster, Less Accurate)</option>
+              <option value="cnn" selected>CNN (Slower, More Accurate)</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-foreground mb-2">Minimum Face Size</label>
+            <select class="w-full px-4 py-3 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+              <option value="80">80px (Close Range)</option>
+              <option value="60" selected>60px (Medium Range)</option>
+              <option value="40">40px (Far Range)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notification Settings -->
+      <div class="bg-card border border-border rounded-xl p-6">
+        <div class="flex items-center gap-3 mb-6">
+          <div class="w-10 h-10 rounded-xl bg-danger/10 flex items-center justify-center">
+            <svg class="w-5 h-5 text-danger" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+            </svg>
+          </div>
+          <div>
+            <h3 class="font-semibold text-foreground">Notifications</h3>
+            <p class="text-sm text-muted">Configure alert preferences</p>
+          </div>
+        </div>
+
+        <div class="space-y-4">
+          <label class="flex items-center justify-between p-4 bg-background rounded-lg cursor-pointer">
+            <div>
+              <p class="text-sm font-medium text-foreground">Unknown Person Alert</p>
+              <p class="text-xs text-muted">Notify when unrecognized face detected</p>
+            </div>
+            <input type="checkbox" checked class="w-5 h-5 rounded border-border bg-background text-primary focus:ring-primary">
+          </label>
+
+          <label class="flex items-center justify-between p-4 bg-background rounded-lg cursor-pointer">
+            <div>
+              <p class="text-sm font-medium text-foreground">Late Arrival Alert</p>
+              <p class="text-xs text-muted">Notify when employee arrives late</p>
+            </div>
+            <input type="checkbox" checked class="w-5 h-5 rounded border-border bg-background text-primary focus:ring-primary">
+          </label>
+
+          <label class="flex items-center justify-between p-4 bg-background rounded-lg cursor-pointer">
+            <div>
+              <p class="text-sm font-medium text-foreground">Daily Summary Email</p>
+              <p class="text-xs text-muted">Send attendance report at end of day</p>
+            </div>
+            <input type="checkbox" checked class="w-5 h-5 rounded border-border bg-background text-primary focus:ring-primary">
+          </label>
+
+          <label class="flex items-center justify-between p-4 bg-background rounded-lg cursor-pointer">
+            <div>
+              <p class="text-sm font-medium text-foreground">System Health Alerts</p>
+              <p class="text-xs text-muted">Notify on camera or system issues</p>
+            </div>
+            <input type="checkbox" checked class="w-5 h-5 rounded border-border bg-background text-primary focus:ring-primary">
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Save Actions -->
+    <div class="mt-8 bg-card border border-border rounded-xl p-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="font-semibold text-foreground">Save Configuration</h3>
+          <p class="text-sm text-muted mt-1">Changes will take effect immediately after saving</p>
+        </div>
+        <div class="flex gap-3">
+          <button onclick="resetDefaults()" class="py-3 px-6 bg-background border border-border text-foreground font-medium rounded-lg hover:bg-card transition-all">
+            Reset to Defaults
+          </button>
+          <button onclick="saveSettings()" class="py-3 px-6 bg-primary text-background font-semibold rounded-lg hover:bg-primary/90 transition-all flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+            Save Changes
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    function updateThreshold(value) {
+      document.getElementById('thresholdValue').textContent = value;
+    }
+
+    function testCamera() {
+      alert('Testing camera connection... Camera is working properly!');
+    }
+
+    function resetDefaults() {
+      if (confirm('Are you sure you want to reset all settings to defaults?')) {
+        document.getElementById('threshold').value = 0.75;
+        document.getElementById('thresholdValue').textContent = '0.75';
+        document.getElementById('lateTime').value = '09:15';
+        alert('Settings reset to defaults.');
+      }
+    }
+
+    function saveSettings() {
+      alert('Settings saved successfully!');
+    }
+  </script>
+</body>
+</html>
