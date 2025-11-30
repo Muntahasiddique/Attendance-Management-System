@@ -1,10 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Live Recognition Terminal - FaceGuard</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <%- include("./includes/head.ejs", { title: "Live Terminal" }) %>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <script>
     tailwind.config = {
@@ -38,6 +34,7 @@
   </style>
 </head>
 <body class="bg-background min-h-screen overflow-hidden">
+    
   <!-- Full Screen Kiosk Mode -->
   <div class="h-screen flex">
     <!-- Main Camera Feed -->
@@ -92,7 +89,7 @@
               </svg>
             </div>
             <div>
-              <h1 class="font-bold text-foreground text-lg">FaceGuard Terminal</h1>
+              <h1 class="font-bold text-foreground text-lg">AMC Terminal</h1>
               <p class="text-xs text-muted">Main Entrance • Building A</p>
             </div>
           </div>
@@ -132,6 +129,7 @@
 
     <!-- Side Panel - Recent Activity -->
     <div class="w-96 bg-card border-l border-border flex flex-col">
+      <%- include("./includes/sidebar.ejs") %>
       <!-- Header -->
       <div class="p-6 border-b border-border">
         <div class="flex items-center justify-between">
@@ -218,7 +216,7 @@
 
       <!-- Admin Access -->
       <div class="p-4 border-t border-border">
-        <a href="login.html" class="w-full py-3 px-4 bg-background border border-border text-foreground font-medium rounded-lg hover:bg-card transition-all flex items-center justify-center gap-2">
+        <a href="/login" class="w-full py-3 px-4 bg-background border border-border text-foreground font-medium rounded-lg hover:bg-card transition-all flex items-center justify-center gap-2">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
           </svg>
