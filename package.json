@@ -1,0 +1,25 @@
+{
+  "name": "ams-ai",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Asad-xnb/Attendance-Management-System.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Asad-xnb/Attendance-Management-System/issues"
+  },
+  "homepage": "https://github.com/Asad-xnb/Attendance-Management-System#readme",
+  "dependencies": {
+    "ejs": "^3.1.10",
+    "express": "^5.1.0",
+    "nodemon": "^3.1.11"
+  }
+}
