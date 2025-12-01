@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+  <%- include("../includes/head.ejs", { title: "Student Dashboard" }) %>
+</head>
+<body class="bg-background min-h-screen">
+  <!-- Simple Student Sidebar -->
+  <aside class="fixed left-0 top-0 h-full w-64 bg-card border-r border-border p-4 flex flex-col">
+    <!-- Logo -->
+    <div class="flex items-center gap-3 mb-8 px-2">
+      <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+        <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+        </svg>
+      </div>
+      <div>
+        <h1 class="font-bold text-foreground">AMC</h1>
+        <p class="text-xs text-muted">Student Portal</p>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="flex-1 space-y-1">
+      <a href="/student/dashboard" class="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-primary/10 text-primary font-medium">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
+        </svg>
+        Dashboard
+      </a>
+      <a href="/student/attendance" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-muted hover:text-foreground hover:bg-card transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+        </svg>
+        My Attendance
+      </a>
+    </nav>
+
+    <!-- User -->
+    <div class="border-t border-border pt-4 mt-4">
+      <div class="flex items-center gap-3 px-2">
+        <div class="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center text-primary font-semibold">
+          <%= user ? user.fullName.charAt(0).toUpperCase() : 'S' %>
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-medium text-foreground truncate"><%= user ? user.fullName : 'Student' %></p>
+          <p class="text-xs text-muted truncate"><%= user ? user.email : '' %></p>
+        </div>
+        <a href="/logout" class="text-muted hover:text-foreground" title="Logout">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="ml-64 p-8">
+    <div class="mb-8">
+      <h1 class="text-2xl font-bold text-foreground">Welcome, <%= user ? user.fullName : 'Student' %></h1>
+      <p class="text-muted mt-1">Your attendance overview</p>
+    </div>
+
+    <!-- Student Dashboard Content -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div class="bg-card border border-border rounded-xl p-6">
+        <div class="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4">
+          <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+        <p class="text-3xl font-bold text-foreground">0</p>
+        <p class="text-sm text-muted mt-1">Classes Attended</p>
+      </div>
+
+      <div class="bg-card border border-border rounded-xl p-6">
+        <div class="w-12 h-12 rounded-xl bg-warning/10 flex items-center justify-center mb-4">
+          <svg class="w-6 h-6 text-warning" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+        <p class="text-3xl font-bold text-foreground">0%</p>
+        <p class="text-sm text-muted mt-1">Attendance Rate</p>
+      </div>
+
+      <div class="bg-card border border-border rounded-xl p-6">
+        <div class="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center mb-4">
+          <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+          </svg>
+        </div>
+        <p class="text-3xl font-bold text-foreground">0</p>
+        <p class="text-sm text-muted mt-1">Enrolled Courses</p>
+      </div>
+    </div>
+
+    <!-- Notice -->
+    <div class="bg-card border border-border rounded-xl p-6">
+      <h3 class="font-semibold text-foreground mb-4">Student Dashboard</h3>
+      <p class="text-muted">Your attendance records will appear here once you start attending classes.</p>
+    </div>
+  </main>
+</body>
+</html>

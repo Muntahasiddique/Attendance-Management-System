@@ -1,32 +1,28 @@
 const router = require('express').Router();
+const { isAuthenticated, hasRole } = require('../middleware/auth');
 
 router.get("/", (req, res) => {
     res.redirect("/dashboard");
 });
 
-router.get("/dashboard", (req, res) => {
+router.get("/dashboard", isAuthenticated, hasRole('admin', 'teacher'), (req, res) => {
     res.render("dashboard");
 });
 
-router.get("/enrollment", (req, res) => {
+router.get("/enrollment", isAuthenticated, hasRole('admin', 'teacher'), (req, res) => {
     res.render("enrollment");
 });
 
-router.get("/reports", (req, res) => {
+router.get("/reports", isAuthenticated, hasRole('admin', 'teacher'), (req, res) => {
     res.render("reports");
 });
 
-router.get("/settings", (req, res) => {
+router.get("/settings", isAuthenticated, hasRole('admin'), (req, res) => {
     res.render("settings");
 });
 
-router.get("/terminal", (req, res) => {
+router.get("/terminal", isAuthenticated, (req, res) => {
     res.render("terminal");
 });
-
-router.get("/login", (req, res) => {
-    res.render("login");
-});
-
 
 module.exports = router;
