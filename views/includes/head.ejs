@@ -26,4 +26,70 @@
     body { font-family: 'Inter', sans-serif; }
     .pulse-dot { animation: pulse 2s infinite; }
     @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+    
+    /* Sidebar toggle styles */
+    #sidebar.sidebar-closed { transform: translateX(-100%); }
+    #sidebarOverlay { display: none; }
+    #sidebarOverlay.show { display: block; }
   </style>
+  <script>
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('sidebarOverlay');
+      const mainContent = document.getElementById('mainContent');
+      const menuButton = document.getElementById('menuButton');
+      
+      sidebar.classList.toggle('sidebar-closed');
+      
+      // Toggle overlay on mobile
+      if (overlay && window.innerWidth < 1024) {
+        overlay.classList.toggle('show');
+      }
+      
+      // Adjust main content margin
+      if (mainContent) {
+        if (sidebar.classList.contains('sidebar-closed')) {
+          mainContent.classList.remove('ml-64');
+          mainContent.classList.add('ml-0');
+        } else {
+          mainContent.classList.remove('ml-0');
+          mainContent.classList.add('ml-64');
+        }
+      }
+      
+      // Show/hide menu button
+      if (menuButton) {
+        if (sidebar.classList.contains('sidebar-closed')) {
+          menuButton.style.opacity = '1';
+          menuButton.style.pointerEvents = 'auto';
+        } else {
+          menuButton.style.opacity = '0';
+          menuButton.style.pointerEvents = 'none';
+        }
+      }
+      
+      // Store state in localStorage
+      const isClosed = sidebar.classList.contains('sidebar-closed');
+      localStorage.setItem('sidebarClosed', isClosed);
+    }
+    
+    // Restore sidebar state on page load
+    document.addEventListener('DOMContentLoaded', () => {
+      const sidebar = document.getElementById('sidebar');
+      const mainContent = document.getElementById('mainContent');
+      const menuButton = document.getElementById('menuButton');
+      const isClosed = localStorage.getItem('sidebarClosed') === 'true';
+      
+      if (isClosed) {
+        sidebar.classList.add('sidebar-closed');
+        if (mainContent) {
+          mainContent.classList.remove('ml-64');
+          mainContent.classList.add('ml-0');
+        }
+        if (menuButton) {
+          menuButton.style.opacity = '1';
+          menuButton.style.pointerEvents = 'auto';
+        }
+      }
+    });
+  </script>

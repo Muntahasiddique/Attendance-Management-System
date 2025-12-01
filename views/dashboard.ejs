@@ -3,11 +3,15 @@
   <%- include("./includes/head.ejs", { title: "Dashboard" }) %>
 </head>
 <body class="bg-background min-h-screen">
+  <!-- Sidebar Overlay (Mobile only) -->
+  <div id="sidebarOverlay" class="fixed inset-0 bg-black/50 z-40" onclick="toggleSidebar()"></div>
+  
   <!-- Sidebar -->
   <%- include("./includes/sidebar.ejs", {active: "dashboard"}) %>
 
   <!-- Main Content -->
-  <main class="ml-64 p-8">
+  <main id="mainContent" class="ml-64 p-8 transition-all duration-300">
+    
     <!-- Header -->
     <div class="flex items-center justify-between mb-8">
       <div>
