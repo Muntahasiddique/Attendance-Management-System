@@ -1,300 +1,413 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
   <%- include("./includes/head.ejs", { title: "Live Terminal" }) %>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            background: '#0a0a0b',
-            foreground: '#fafafa',
-            card: '#141417',
-            border: '#27272a',
-            muted: '#71717a',
-            primary: '#10b981',
-            warning: '#f59e0b',
-            danger: '#ef4444',
-          },
-          fontFamily: {
-            mono: ['JetBrains Mono', 'monospace'],
-          }
-        }
-      }
-    }
-  </script>
-  <style>
-    body { font-family: 'Inter', sans-serif; }
-    .scanning { animation: scan 2s linear infinite; }
-    @keyframes scan { 0% { transform: translateY(-100%); } 100% { transform: translateY(100%); } }
-    .glow-green { box-shadow: 0 0 30px rgba(16, 185, 129, 0.3); }
-    .glow-red { box-shadow: 0 0 30px rgba(239, 68, 68, 0.3); }
-    .pulse { animation: pulse 1s infinite; }
-    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
-  </style>
+  <script defer src="/scripts/face-api.min.js"></script>
 </head>
-<body class="bg-background min-h-screen overflow-hidden">
-    
-  <!-- Full Screen Kiosk Mode -->
-  <div class="h-screen flex">
-    <!-- Main Camera Feed -->
-    <div class="flex-1 relative">
-      <!-- Camera View -->
-      <div class="absolute inset-0 bg-black">
-        <video id="cameraFeed" class="w-full h-full object-cover" autoplay muted playsinline></video>
-        
-        <!-- Scanning Line Effect -->
-        <div class="absolute inset-0 pointer-events-none overflow-hidden">
-          <div class="scanning absolute left-0 right-0 h-1 bg-gradient-to-b from-transparent via-primary/50 to-transparent"></div>
-        </div>
+<body class="bg-background min-h-screen">
+  <div id="sidebarOverlay" class="fixed inset-0 bg-black/50 z-40" onclick="toggleSidebar()"></div>
+  <%- include("./includes/sidebar.ejs", {active: "terminal"}) %>
 
-        <!-- Face Detection Box -->
-        <div id="faceBox" class="hidden absolute border-4 rounded-lg transition-all duration-200" style="top: 30%; left: 35%; width: 30%; height: 40%;">
-          <!-- Corner Brackets -->
-          <div class="absolute -top-1 -left-1 w-8 h-8 border-t-4 border-l-4 border-current rounded-tl-lg"></div>
-          <div class="absolute -top-1 -right-1 w-8 h-8 border-t-4 border-r-4 border-current rounded-tr-lg"></div>
-          <div class="absolute -bottom-1 -left-1 w-8 h-8 border-b-4 border-l-4 border-current rounded-bl-lg"></div>
-          <div class="absolute -bottom-1 -right-1 w-8 h-8 border-b-4 border-r-4 border-current rounded-br-lg"></div>
+  <main id="mainContent" class="ml-64 p-8 transition-all duration-300">
+    <div class="mb-8">
+      <h1 class="text-2xl font-bold text-foreground">Attendance Terminal</h1>
+      <p class="text-muted mt-1">Real-time facial recognition attendance system</p>
+    </div>
+
+    <!-- Configuration Panel -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+      <div class="bg-card border border-border rounded-xl p-6">
+        <h3 class="font-semibold text-foreground mb-4">Teacher Information</h3>
+        <div class="space-y-2">
+          <div><p class="text-sm text-muted">Name</p><p class="font-medium text-foreground"><%= user ? user.fullName : 'Not Logged In' %></p></div>
+          <div><p class="text-sm text-muted">Email</p><p class="font-medium text-foreground"><%= user ? user.email : '-' %></p></div>
+        </div>
+      </div>
+
+      <div class="bg-card border border-border rounded-xl p-6">
+        <h3 class="font-semibold text-foreground mb-4">Select Class</h3>
+        <select id="classSelect" class="w-full px-4 py-3 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary">
+          <option value="">Choose a class...</option>
+        </select>
+        <p id="classStudentCount" class="text-sm text-muted mt-2"></p>
+      </div>
+
+      <div class="bg-card border border-border rounded-xl p-6">
+        <h3 class="font-semibold text-foreground mb-4">Select Course</h3>
+        <select id="courseSelect" disabled class="w-full px-4 py-3 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50">
+          <option value="">Choose a course...</option>
+        </select>
+        <p id="courseCode" class="text-sm text-muted mt-2"></p>
+      </div>
+    </div>
+
+    <!-- Camera and Activity -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div class="lg:col-span-2">
+        <div class="bg-card border border-border rounded-xl overflow-hidden">
+          <div class="p-4 border-b border-border flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <div id="statusDot" class="w-2 h-2 bg-muted rounded-full"></div>
+              <span id="statusText" class="text-sm text-muted">Standby</span>
+            </div>
+            <div class="flex gap-2">
+              <button id="startBtn" onclick="startRecognition()" disabled class="px-4 py-2 bg-primary text-background font-medium rounded-lg hover:bg-primary/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                Start Recognition
+              </button>
+              <button id="stopBtn" onclick="stopRecognition()" disabled class="px-4 py-2 bg-danger text-background font-medium rounded-lg hover:bg-danger/90 transition-all disabled:opacity-50 disabled:cursor-not-allowed hidden">
+                Stop Recognition
+              </button>
+            </div>
+          </div>
           
-          <!-- Match Label -->
-          <div id="matchLabel" class="absolute -bottom-12 left-1/2 -translate-x-1/2 px-4 py-2 rounded-lg font-semibold text-sm whitespace-nowrap"></div>
-        </div>
-
-        <!-- Camera Off State -->
-        <div id="cameraOffState" class="absolute inset-0 flex flex-col items-center justify-center bg-background">
-          <div class="w-32 h-32 rounded-full border-4 border-dashed border-border flex items-center justify-center mb-6">
-            <svg class="w-16 h-16 text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
-            </svg>
-          </div>
-          <h2 class="text-2xl font-bold text-foreground mb-2">Camera Not Active</h2>
-          <p class="text-muted mb-6">Press the button below to start recognition</p>
-          <button onclick="startTerminal()" class="py-3 px-8 bg-primary text-background font-semibold rounded-lg hover:bg-primary/90 transition-all flex items-center gap-2">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-            </svg>
-            Start Recognition
-          </button>
-        </div>
-      </div>
-
-      <!-- Top Status Bar -->
-      <div class="absolute top-0 left-0 right-0 p-6 flex items-center justify-between bg-gradient-to-b from-background/80 to-transparent">
-        <div class="flex items-center gap-4 ml-16">
-          <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-              <svg class="w-6 h-6 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+          <div class="relative bg-black aspect-video">
+            <video id="videoElement" class="w-full h-full object-cover" autoplay muted playsinline></video>
+            <canvas id="overlay" class="absolute top-0 left-0 w-full h-full"></canvas>
+            
+            <div id="cameraOff" class="absolute inset-0 flex flex-col items-center justify-center bg-background">
+              <svg class="w-16 h-16 text-muted mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
               </svg>
-            </div>
-            <div>
-              <h1 class="font-bold text-foreground text-lg">AMC Terminal</h1>
-              <p class="text-xs text-muted">Main Entrance • Building A</p>
+              <p class="text-muted">Camera not active</p>
             </div>
           </div>
-        </div>
-        <div class="flex items-center gap-6">
-          <div id="statusIndicator" class="flex items-center gap-2 px-4 py-2 bg-card border border-border rounded-lg">
-            <span class="w-2 h-2 bg-muted rounded-full"></span>
-            <span class="text-sm text-muted">Standby</span>
-          </div>
-          <div class="text-right">
-            <p class="text-2xl font-bold text-foreground font-mono" id="time">09:15:32</p>
-            <p class="text-sm text-muted" id="date">November 30, 2025</p>
+
+          <div class="p-4 grid grid-cols-3 gap-4 bg-background">
+            <div class="text-center">
+              <p class="text-2xl font-bold text-primary" id="markedCount">0</p>
+              <p class="text-xs text-muted">Marked</p>
+            </div>
+            <div class="text-center">
+              <p class="text-2xl font-bold text-foreground" id="totalStudents">0</p>
+              <p class="text-xs text-muted">Total</p>
+            </div>
+            <div class="text-center">
+              <p class="text-2xl font-bold text-warning" id="pendingCount">0</p>
+              <p class="text-xs text-muted">Pending</p>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- Bottom Stats Bar -->
-      <div class="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-background/80 to-transparent">
-        <div class="flex items-center justify-center gap-8">
-          <div class="text-center">
-            <p class="text-3xl font-bold text-primary" id="todayCount">847</p>
-            <p class="text-sm text-muted">Checked In Today</p>
-          </div>
-          <div class="w-px h-12 bg-border"></div>
-          <div class="text-center">
-            <p class="text-3xl font-bold text-warning">28</p>
-            <p class="text-sm text-muted">Late Arrivals</p>
-          </div>
-          <div class="w-px h-12 bg-border"></div>
-          <div class="text-center">
-            <p class="text-3xl font-bold text-foreground">94.1%</p>
-            <p class="text-sm text-muted">Attendance Rate</p>
+      <div class="bg-card border border-border rounded-xl flex flex-col max-h-[600px]">
+        <div class="p-4 border-b border-border">
+          <h3 class="font-semibold text-foreground">Today's Attendance</h3>
+          <p class="text-xs text-muted mt-1">Live feed</p>
+        </div>
+        <div id="activityFeed" class="flex-1 overflow-y-auto p-4 space-y-3">
+          <div class="text-center text-muted py-8">
+            <p class="text-sm">No attendance marked yet</p>
           </div>
         </div>
       </div>
     </div>
-
-    <!-- Side Panel - Recent Activity -->
-    <div class="w-96 bg-card border-l border-border flex flex-col">
-      <%- include("./includes/sidebar.ejs", {active: "terminal"}) %>
-      <!-- Header -->
-      <div class="p-6 border-b border-border">
-        <div class="flex items-center justify-between">
-          <h2 class="font-semibold text-foreground">Recent Activity</h2>
-          <span class="w-2 h-2 bg-primary rounded-full pulse"></span>
-        </div>
-        <p class="text-sm text-muted mt-1">Live attendance feed</p>
-      </div>
-
-      <!-- Activity List -->
-      <div class="flex-1 overflow-y-auto p-4 space-y-3" id="activityList">
-        <div class="flex items-center gap-3 p-4 bg-background rounded-xl border border-primary/20 glow-green">
-          <div class="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center text-primary font-semibold">JD</div>
-          <div class="flex-1">
-            <p class="font-medium text-foreground">John Doe</p>
-            <p class="text-xs text-muted">Engineering • EMP-001</p>
-          </div>
-          <div class="text-right">
-            <span class="text-xs font-medium text-primary">VERIFIED</span>
-            <p class="text-xs text-muted mt-1">09:12 AM</p>
-          </div>
-        </div>
-
-        <div class="flex items-center gap-3 p-4 bg-background rounded-xl">
-          <div class="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-500 font-semibold">SM</div>
-          <div class="flex-1">
-            <p class="font-medium text-foreground">Sarah Miller</p>
-            <p class="text-xs text-muted">Marketing • EMP-002</p>
-          </div>
-          <div class="text-right">
-            <span class="text-xs font-medium text-primary">VERIFIED</span>
-            <p class="text-xs text-muted mt-1">09:10 AM</p>
-          </div>
-        </div>
-
-        <div class="flex items-center gap-3 p-4 bg-background rounded-xl border border-warning/20">
-          <div class="w-12 h-12 rounded-full bg-warning/20 flex items-center justify-center text-warning font-semibold">MJ</div>
-          <div class="flex-1">
-            <p class="font-medium text-foreground">Mike Johnson</p>
-            <p class="text-xs text-muted">Operations • EMP-003</p>
-          </div>
-          <div class="text-right">
-            <span class="text-xs font-medium text-warning">LATE</span>
-            <p class="text-xs text-muted mt-1">09:22 AM</p>
-          </div>
-        </div>
-
-        <div class="flex items-center gap-3 p-4 bg-background rounded-xl">
-          <div class="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center text-primary font-semibold">EW</div>
-          <div class="flex-1">
-            <p class="font-medium text-foreground">Emily Wang</p>
-            <p class="text-xs text-muted">Engineering • EMP-005</p>
-          </div>
-          <div class="text-right">
-            <span class="text-xs font-medium text-primary">VERIFIED</span>
-            <p class="text-xs text-muted mt-1">09:05 AM</p>
-          </div>
-        </div>
-
-        <div class="flex items-center gap-3 p-4 bg-background rounded-xl">
-          <div class="w-12 h-12 rounded-full bg-cyan-500/20 flex items-center justify-center text-cyan-500 font-semibold">AL</div>
-          <div class="flex-1">
-            <p class="font-medium text-foreground">Alex Lee</p>
-            <p class="text-xs text-muted">Finance • EMP-008</p>
-          </div>
-          <div class="text-right">
-            <span class="text-xs font-medium text-primary">VERIFIED</span>
-            <p class="text-xs text-muted mt-1">09:01 AM</p>
-          </div>
-        </div>
-
-        <div class="flex items-center gap-3 p-4 bg-background rounded-xl border border-danger/20 glow-red">
-          <div class="w-12 h-12 rounded-full bg-danger/20 flex items-center justify-center text-danger font-semibold">?</div>
-          <div class="flex-1">
-            <p class="font-medium text-foreground">Unknown Person</p>
-            <p class="text-xs text-muted">No match found</p>
-          </div>
-          <div class="text-right">
-            <span class="text-xs font-medium text-danger">DENIED</span>
-            <p class="text-xs text-muted mt-1">08:55 AM</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Admin Access -->
-      <div class="p-4 border-t border-border">
-        <a href="/login" class="w-full py-3 px-4 bg-background border border-border text-foreground font-medium rounded-lg hover:bg-card transition-all flex items-center justify-center gap-2">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
-          </svg>
-          Admin Access
-        </a>
-      </div>
-    </div>
-  </div>
+  </main>
 
   <script>
-    // Update time
-    function updateTime() {
-      const now = new Date();
-      document.getElementById('time').textContent = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
-      document.getElementById('date').textContent = now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-    }
-    setInterval(updateTime, 1000);
-    updateTime();
-
-    let isActive = false;
     let stream = null;
+    let isRecognitionActive = false;
+    let studentDescriptors = [];
+    let markedStudents = new Set();
+    let selectedClassId = null;
+    let selectedCourseId = null;
+    let faceMatcher = null;
 
-    async function startTerminal() {
+    async function loadTeacherData() {
       try {
-        stream = await navigator.mediaDevices.getUserMedia({ 
-          video: { width: 1920, height: 1080, facingMode: 'user' } 
+        const response = await fetch('/terminal/api/teacher-data');
+        const data = await response.json();
+        
+        const classSelect = document.getElementById('classSelect');
+        classSelect.innerHTML = '<option value="">Choose a class...</option>';
+        
+        data.classes.forEach(cls => {
+          const option = document.createElement('option');
+          option.value = cls._id;
+          option.textContent = cls.displayName;
+          option.dataset.courses = JSON.stringify(cls.courses);
+          classSelect.appendChild(option);
         });
-        document.getElementById('cameraFeed').srcObject = stream;
-        document.getElementById('cameraOffState').style.display = 'none';
-        
-        // Update status
-        const indicator = document.getElementById('statusIndicator');
-        indicator.innerHTML = '<span class="w-2 h-2 bg-primary rounded-full pulse"></span><span class="text-sm text-primary">Active</span>';
-        indicator.classList.add('border-primary/20');
-        
-        isActive = true;
-        simulateDetection();
-      } catch (err) {
-        alert('Unable to access camera. Please check permissions.');
+      } catch (error) {
+        console.error('Error loading teacher data:', error);
       }
     }
 
-    function simulateDetection() {
-      if (!isActive) return;
+    document.getElementById('classSelect').addEventListener('change', async (e) => {
+      const classId = e.target.value;
+      const courseSelect = document.getElementById('courseSelect');
+      const startBtn = document.getElementById('startBtn');
       
-      const faceBox = document.getElementById('faceBox');
-      const matchLabel = document.getElementById('matchLabel');
+      if (!classId) {
+        courseSelect.disabled = true;
+        courseSelect.innerHTML = '<option value="">Choose a course...</option>';
+        startBtn.disabled = true;
+        document.getElementById('classStudentCount').textContent = '';
+        return;
+      }
       
-      // Randomly simulate detection
-      setTimeout(() => {
-        const detected = Math.random() > 0.3;
+      selectedClassId = classId;
+      
+      const courses = JSON.parse(e.target.selectedOptions[0].dataset.courses);
+      courseSelect.innerHTML = '<option value="">Choose a course...</option>';
+      courses.forEach(course => {
+        const option = document.createElement('option');
+        option.value = course._id;
+        option.textContent = course.name;
+        option.dataset.code = course.code;
+        courseSelect.appendChild(option);
+      });
+      courseSelect.disabled = false;
+      
+      try {
+        const response = await fetch(`/terminal/api/class-students/${classId}`);
+        const data = await response.json();
+        studentDescriptors = data.students;
         
-        if (detected) {
-          faceBox.classList.remove('hidden');
-          
-          const isMatch = Math.random() > 0.2;
-          
-          if (isMatch) {
-            faceBox.classList.remove('border-danger', 'glow-red');
-            faceBox.classList.add('border-primary', 'glow-green');
-            matchLabel.className = 'absolute -bottom-12 left-1/2 -translate-x-1/2 px-4 py-2 rounded-lg font-semibold text-sm whitespace-nowrap bg-primary text-background';
-            matchLabel.textContent = '✓ MATCH FOUND';
-          } else {
-            faceBox.classList.remove('border-primary', 'glow-green');
-            faceBox.classList.add('border-danger', 'glow-red');
-            matchLabel.className = 'absolute -bottom-12 left-1/2 -translate-x-1/2 px-4 py-2 rounded-lg font-semibold text-sm whitespace-nowrap bg-danger text-foreground';
-            matchLabel.textContent = '✗ UNKNOWN';
-          }
-          
-          setTimeout(() => {
-            faceBox.classList.add('hidden');
-            if (isActive) simulateDetection();
-          }, 3000);
-        } else {
-          if (isActive) simulateDetection();
+        document.getElementById('classStudentCount').textContent = `${studentDescriptors.length} students enrolled`;
+        document.getElementById('totalStudents').textContent = studentDescriptors.length;
+        
+        if (studentDescriptors.length > 0 && typeof faceapi !== 'undefined') {
+          const labeledDescriptors = studentDescriptors.map(student => {
+            const descriptors = [new Float32Array(student.faceDescriptor)];
+            return new faceapi.LabeledFaceDescriptors(student._id, descriptors);
+          });
+          faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.6);
         }
-      }, 2000);
+      } catch (error) {
+        console.error('Error loading students:', error);
+      }
+    });
+
+    document.getElementById('courseSelect').addEventListener('change', (e) => {
+      const courseId = e.target.value;
+      const startBtn = document.getElementById('startBtn');
+      
+      if (!courseId) {
+        startBtn.disabled = true;
+        document.getElementById('courseCode').textContent = '';
+        return;
+      }
+      
+      selectedCourseId = courseId;
+      const courseCode = e.target.selectedOptions[0].dataset.code;
+      document.getElementById('courseCode').textContent = `Code: ${courseCode}`;
+      startBtn.disabled = false;
+      
+      loadTodayAttendance();
+    });
+
+    async function loadTodayAttendance() {
+      try {
+        const response = await fetch(`/terminal/api/today-attendance/${selectedCourseId}`);
+        const data = await response.json();
+        
+        const activityFeed = document.getElementById('activityFeed');
+        activityFeed.innerHTML = '';
+        
+        if (data.attendance.length === 0) {
+          activityFeed.innerHTML = '<div class="text-center text-muted py-8"><p class="text-sm">No attendance marked yet</p></div>';
+          return;
+        }
+        
+        data.attendance.forEach(record => {
+          markedStudents.add(record.studentRef._id);
+          addActivityItem(record);
+        });
+        
+        updateStats();
+      } catch (error) {
+        console.error('Error loading attendance:', error);
+      }
     }
+
+    async function startRecognition() {
+      if (!selectedClassId || !selectedCourseId) {
+        alert('Please select a class and course first');
+        return;
+      }
+      
+      const startBtn = document.getElementById('startBtn');
+      
+      if (!isRecognitionActive) {
+        try {
+          stream = await navigator.mediaDevices.getUserMedia({ video: { width: 1280, height: 720 } });
+          
+          const video = document.getElementById('videoElement');
+          video.srcObject = stream;
+          document.getElementById('cameraOff').style.display = 'none';
+          
+          await Promise.all([
+            faceapi.nets.tinyFaceDetector.loadFromUri('/scripts'),
+            faceapi.nets.faceLandmark68Net.loadFromUri('/scripts'),
+            faceapi.nets.faceRecognitionNet.loadFromUri('/scripts')
+          ]);
+          
+          isRecognitionActive = true;
+          startBtn.disabled = true;
+          startBtn.classList.add('hidden');
+          
+          const stopBtn = document.getElementById('stopBtn');
+          stopBtn.disabled = false;
+          stopBtn.classList.remove('hidden');
+          
+          updateStatus('active', 'Recognizing...');
+          recognizeFaces();ent = 'Stop Recognition';
+          startBtn.classList.remove('bg-primary');
+          startBtn.classList.add('bg-danger');
+        } catch (error) {
+          console.error('Error:', error);
+          alert('Unable to start camera');
+        }
+      }
+    }
+
+    function stopRecognition() {
+      isRecognitionActive = false;
+
+    function stopRecognition() {
+      isRecognitionActive = false;
+      
+      if (stream) {
+        stream.getTracks().forEach(track => track.stop());
+        stream = null;
+      }
+      
+      const video = document.getElementById('videoElement');
+      video.srcObject = null;
+      document.getElementById('cameraOff').style.display = 'flex';
+      const canvas = document.getElementById('overlay');
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      const startBtn = document.getElementById('startBtn');
+      startBtn.disabled = false;
+      startBtn.classList.remove('hidden');
+      
+      const stopBtn = document.getElementById('stopBtn');
+      stopBtn.disabled = true;
+      stopBtn.classList.add('hidden');
+      
+      updateStatus('standby', 'Standby');
+    } updateStatus('standby', 'Standby');
+    }
+
+    async function recognizeFaces() {
+      if (!isRecognitionActive) return;
+      
+      const video = document.getElementById('videoElement');
+      const canvas = document.getElementById('overlay');
+      const displaySize = { width: video.offsetWidth, height: video.offsetHeight };
+      
+      canvas.width = displaySize.width;
+      canvas.height = displaySize.height;
+      faceapi.matchDimensions(canvas, displaySize);
+      
+      const detectFaces = async () => {
+        if (!isRecognitionActive) return;
+        
+        const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptors();
+        const resizedDetections = faceapi.resizeResults(detections, displaySize);
+        
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
+        resizedDetections.forEach(detection => {
+          const bestMatch = faceMatcher.findBestMatch(detection.descriptor);
+          const box = detection.detection.box;
+          
+          const isMarked = markedStudents.has(bestMatch.label);
+          const isMatch = bestMatch.label !== 'unknown' && bestMatch.distance < 0.6;
+          
+          ctx.strokeStyle = isMarked ? '#10b981' : (isMatch ? '#f59e0b' : '#ef4444');
+          ctx.lineWidth = 3;
+          ctx.strokeRect(box.x, box.y, box.width, box.height);
+          
+          const label = isMatch ? (isMarked ? '✓ MARKED' : `${(1 - bestMatch.distance).toFixed(2)}`) : 'UNKNOWN';
+          
+          ctx.fillStyle = isMarked ? '#10b981' : (isMatch ? '#f59e0b' : '#ef4444');
+          ctx.font = '16px Inter';
+          const textWidth = ctx.measureText(label).width;
+          ctx.fillRect(box.x, box.y - 25, textWidth + 10, 25);
+          ctx.fillStyle = '#ffffff';
+          ctx.fillText(label, box.x + 5, box.y - 7);
+          
+          if (isMatch && !isMarked) {
+            markAttendance(bestMatch.label, 1 - bestMatch.distance);
+          }
+        });
+        
+        setTimeout(detectFaces, 100);
+      };
+      
+      detectFaces();
+    }
+
+    async function markAttendance(studentId, confidenceScore) {
+      if (markedStudents.has(studentId)) return;
+      
+      try {
+        const response = await fetch('/terminal/api/mark-attendance', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ studentId, courseId: selectedCourseId, classId: selectedClassId, confidenceScore })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          markedStudents.add(studentId);
+          addActivityItem(data.attendance);
+          updateStats();
+        } else if (data.alreadyMarked) {
+          markedStudents.add(studentId);
+        }
+      } catch (error) {
+        console.error('Error marking attendance:', error);
+      }
+    }
+
+    function addActivityItem(record) {
+      const activityFeed = document.getElementById('activityFeed');
+      
+      if (activityFeed.querySelector('.text-center')) {
+        activityFeed.innerHTML = '';
+      }
+      
+      const initials = record.student.fullName.split(' ').map(n => n[0]).join('');
+      const statusColor = record.status === 'present' ? 'primary' : 'warning';
+      const statusLabel = record.status === 'present' ? 'PRESENT' : 'LATE';
+      const time = new Date(record.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+      
+      const item = document.createElement('div');
+      item.className = 'flex items-center gap-3 p-3 bg-background rounded-lg border border-' + statusColor + '/20';
+      item.innerHTML = `
+        <div class="w-10 h-10 rounded-full bg-${statusColor}/20 flex items-center justify-center text-${statusColor} font-semibold text-sm">${initials}</div>
+        <div class="flex-1 min-w-0">
+          <p class="font-medium text-foreground text-sm truncate">${record.student.fullName}</p>
+          <p class="text-xs text-muted">${record.student.rollNo}</p>
+        </div>
+        <div class="text-right">
+          <span class="text-xs font-medium text-${statusColor}">${statusLabel}</span>
+          <p class="text-xs text-muted">${time}</p>
+        </div>
+      `;
+      
+      activityFeed.insertBefore(item, activityFeed.firstChild);
+    }
+
+    function updateStats() {
+      document.getElementById('markedCount').textContent = markedStudents.size;
+      document.getElementById('pendingCount').textContent = studentDescriptors.length - markedStudents.size;
+    }
+
+    function updateStatus(status, text) {
+      const dot = document.getElementById('statusDot');
+      const statusText = document.getElementById('statusText');
+      
+      dot.className = 'w-2 h-2 rounded-full ' + (status === 'active' ? 'bg-primary animate-pulse' : 'bg-muted');
+      statusText.textContent = text;
+    }
+
+    loadTeacherData();
   </script>
 </body>
 </html>

@@ -10,6 +10,7 @@ const authRoutes = require('./routes/auth.routes');
 const studentRoutes = require('./routes/student.routes');
 const adminRoutes = require('./routes/admin.routes');
 const enrollmentRoutes = require('./routes/enrollment.routes');
+const terminalRoutes = require('./routes/terminal.routes');
 const { attachUser } = require('./middleware/auth');
 
 const app = express();
@@ -17,6 +18,9 @@ const app = express();
 // View engine setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
+
+// public folder 
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Body parser middleware
 app.use(express.json());
@@ -60,6 +64,7 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/ams-ai')
     app.use('/student', studentRoutes);
     app.use('/admin', adminRoutes);
     app.use('/api', enrollmentRoutes);
+    app.use('/terminal', terminalRoutes);
     app.use('/admin', adminRoutes);
 
     const PORT = process.env.PORT || 3000;
