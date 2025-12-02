@@ -229,10 +229,29 @@
       
       if (!isRecognitionActive) {
         try {
-          stream = await navigator.mediaDevices.getUserMedia({ video: { width: 1280, height: 720 } });
+          // Fetch camera settings from server
+          const settingsRes = await fetch('/api/camera/stream-url');
+          const cameraSettings = await settingsRes.json();
           
           const video = document.getElementById('videoElement');
-          video.srcObject = stream;
+          
+          if (cameraSettings.cameraType === 'ip' && cameraSettings.streamUrl) {
+            // Use IP camera via RTSP
+            // Note: Browsers cannot directly play RTSP streams
+            // For production, you would need to set up a streaming server (like ffmpeg)
+            // that converts RTSP to HLS or WebRTC
+            
+            alert('IP Camera mode is enabled. Note: Direct RTSP streaming requires a media server.\n\nURL: ' + cameraSettings.streamUrl + '\n\nFalling back to webcam for now.');
+            
+            // Fall back to webcam for now
+            stream = await navigator.mediaDevices.getUserMedia({ video: { width: 1280, height: 720 } });
+            video.srcObject = stream;
+          } else {
+            // Use built-in webcam
+            stream = await navigator.mediaDevices.getUserMedia({ video: { width: 1280, height: 720 } });
+            video.srcObject = stream;
+          }
+          
           document.getElementById('cameraOff').style.display = 'none';
           
           await Promise.all([
@@ -250,12 +269,10 @@
           stopBtn.classList.remove('hidden');
           
           updateStatus('active', 'Recognizing...');
-          recognizeFaces();ent = 'Stop Recognition';
-          startBtn.classList.remove('bg-primary');
-          startBtn.classList.add('bg-danger');
+          recognizeFaces();
         } catch (error) {
           console.error('Error:', error);
-          alert('Unable to start camera');
+          alert('Unable to start camera: ' + error.message);
         }
       }
     }

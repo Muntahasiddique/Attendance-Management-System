@@ -11,6 +11,8 @@ const studentRoutes = require('./routes/student.routes');
 const adminRoutes = require('./routes/admin.routes');
 const enrollmentRoutes = require('./routes/enrollment.routes');
 const terminalRoutes = require('./routes/terminal.routes');
+const settingsRoutes = require('./routes/settings.routes');
+const cameraRoutes = require('./routes/camera.routes');
 const { attachUser } = require('./middleware/auth');
 
 const app = express();
@@ -66,6 +68,8 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/ams-ai')
     app.use('/api', enrollmentRoutes);
     app.use('/terminal', terminalRoutes);
     app.use('/admin', adminRoutes);
+    app.use('/', settingsRoutes);
+    app.use('/', cameraRoutes);
 
     const PORT = process.env.PORT || 3000;
     app.listen(PORT, () => {

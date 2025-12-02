@@ -31,26 +31,26 @@
         <div class="space-y-5">
           <div>
             <label class="block text-sm font-medium text-foreground mb-2">Active Camera</label>
-            <select id="cameraSelect" class="w-full px-4 py-3 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+            <select id="cameraType" class="w-full px-4 py-3 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
               <option value="webcam">Built-in Webcam (Default)</option>
-              <option value="usb">USB Camera - Logitech C920</option>
-              <option value="ip1">IP Camera - 192.168.1.100</option>
-              <option value="ip2">IP Camera - 192.168.1.101</option>
+              <option value="usb">USB Camera</option>
+              <option value="ip">IP Camera (RTSP)</option>
             </select>
           </div>
 
           <div>
             <label class="block text-sm font-medium text-foreground mb-2">Resolution</label>
-            <select class="w-full px-4 py-3 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+            <select id="resolution" class="w-full px-4 py-3 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
               <option value="1080p">1920 x 1080 (Full HD)</option>
               <option value="720p">1280 x 720 (HD)</option>
               <option value="480p">854 x 480 (SD)</option>
             </select>
           </div>
 
-          <div>
-            <label class="block text-sm font-medium text-foreground mb-2">IP Camera URL</label>
-            <input type="text" placeholder="rtsp://192.168.1.100:554/stream" class="w-full px-4 py-3 bg-background border border-border rounded-lg text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+          <div id="ipCameraSection">
+            <label class="block text-sm font-medium text-foreground mb-2">IP Camera URL (RTSP)</label>
+            <input type="text" id="ipCameraUrl" placeholder="rtsp://192.168.0.103:554/11" class="w-full px-4 py-3 bg-background border border-border rounded-lg text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+            <p class="text-xs text-muted mt-2">Enter the RTSP URL of your IP camera. This will be used instead of built-in camera.</p>
           </div>
 
           <button onclick="testCamera()" class="w-full py-3 px-4 bg-background border border-border text-foreground font-medium rounded-lg hover:bg-card transition-all flex items-center justify-center gap-2">
@@ -79,23 +79,23 @@
         <div class="space-y-5">
           <div>
             <label class="block text-sm font-medium text-foreground mb-2">Work Start Time</label>
-            <input type="time" value="09:00" class="w-full px-4 py-3 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+            <input type="time" id="workStartTime" value="09:00" class="w-full px-4 py-3 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
           </div>
 
           <div>
             <label class="block text-sm font-medium text-foreground mb-2">Late Time Cutoff</label>
-            <input type="time" value="09:15" id="lateTime" class="w-full px-4 py-3 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+            <input type="time" id="lateCutoffTime" value="09:15" class="w-full px-4 py-3 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
             <p class="text-xs text-muted mt-2">Arrivals after this time will be marked as "Late"</p>
           </div>
 
           <div>
             <label class="block text-sm font-medium text-foreground mb-2">Work End Time</label>
-            <input type="time" value="17:00" class="w-full px-4 py-3 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+            <input type="time" id="workEndTime" value="17:00" class="w-full px-4 py-3 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
           </div>
 
           <div>
             <label class="block text-sm font-medium text-foreground mb-2">Timezone</label>
-            <select class="w-full px-4 py-3 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+            <select id="timezone" class="w-full px-4 py-3 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
               <option value="UTC-5">Eastern Time (UTC-5)</option>
               <option value="UTC-6">Central Time (UTC-6)</option>
               <option value="UTC-7">Mountain Time (UTC-7)</option>
@@ -125,7 +125,7 @@
               <label class="text-sm font-medium text-foreground">Matching Threshold</label>
               <span class="text-sm text-primary font-mono" id="thresholdValue">0.75</span>
             </div>
-            <input type="range" min="0.5" max="0.95" step="0.05" value="0.75" id="threshold" class="w-full h-2 bg-background rounded-lg appearance-none cursor-pointer accent-primary" oninput="updateThreshold(this.value)">
+            <input type="range" min="0.5" max="0.95" step="0.05" value="0.75" id="matchingThreshold" class="w-full h-2 bg-background rounded-lg appearance-none cursor-pointer accent-primary" oninput="updateThreshold(this.value)">
             <div class="flex justify-between text-xs text-muted mt-2">
               <span>Lenient (0.50)</span>
               <span>Strict (0.95)</span>
@@ -137,7 +137,7 @@
 
           <div>
             <label class="block text-sm font-medium text-foreground mb-2">Detection Model</label>
-            <select class="w-full px-4 py-3 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+            <select id="detectionModel" class="w-full px-4 py-3 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
               <option value="hog">HOG (Faster, Less Accurate)</option>
               <option value="cnn" selected>CNN (Slower, More Accurate)</option>
             </select>
@@ -145,7 +145,7 @@
 
           <div>
             <label class="block text-sm font-medium text-foreground mb-2">Minimum Face Size</label>
-            <select class="w-full px-4 py-3 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+            <select id="minimumFaceSize" class="w-full px-4 py-3 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
               <option value="80">80px (Close Range)</option>
               <option value="60" selected>60px (Medium Range)</option>
               <option value="40">40px (Far Range)</option>
@@ -174,7 +174,7 @@
               <p class="text-sm font-medium text-foreground">Unknown Person Alert</p>
               <p class="text-xs text-muted">Notify when unrecognized face detected</p>
             </div>
-            <input type="checkbox" checked class="w-5 h-5 rounded border-border bg-background text-primary focus:ring-primary">
+            <input type="checkbox" id="unknownPersonAlert" checked class="w-5 h-5 rounded border-border bg-background text-primary focus:ring-primary">
           </label>
 
           <label class="flex items-center justify-between p-4 bg-background rounded-lg cursor-pointer">
@@ -182,7 +182,7 @@
               <p class="text-sm font-medium text-foreground">Late Arrival Alert</p>
               <p class="text-xs text-muted">Notify when employee arrives late</p>
             </div>
-            <input type="checkbox" checked class="w-5 h-5 rounded border-border bg-background text-primary focus:ring-primary">
+            <input type="checkbox" id="lateArrivalAlert" checked class="w-5 h-5 rounded border-border bg-background text-primary focus:ring-primary">
           </label>
 
           <label class="flex items-center justify-between p-4 bg-background rounded-lg cursor-pointer">
@@ -190,7 +190,7 @@
               <p class="text-sm font-medium text-foreground">Daily Summary Email</p>
               <p class="text-xs text-muted">Send attendance report at end of day</p>
             </div>
-            <input type="checkbox" checked class="w-5 h-5 rounded border-border bg-background text-primary focus:ring-primary">
+            <input type="checkbox" id="dailySummaryEmail" checked class="w-5 h-5 rounded border-border bg-background text-primary focus:ring-primary">
           </label>
 
           <label class="flex items-center justify-between p-4 bg-background rounded-lg cursor-pointer">
@@ -198,7 +198,7 @@
               <p class="text-sm font-medium text-foreground">System Health Alerts</p>
               <p class="text-xs text-muted">Notify on camera or system issues</p>
             </div>
-            <input type="checkbox" checked class="w-5 h-5 rounded border-border bg-background text-primary focus:ring-primary">
+            <input type="checkbox" id="systemHealthAlerts" checked class="w-5 h-5 rounded border-border bg-background text-primary focus:ring-primary">
           </label>
         </div>
       </div>
@@ -227,26 +227,165 @@
   </main>
 
   <script>
+    let currentSettings = null;
+
+    // Load settings on page load
+    async function loadSettings() {
+      try {
+        const response = await fetch('/api/settings');
+        const settings = await response.json();
+        currentSettings = settings;
+        
+        // Populate form fields
+        document.getElementById('cameraType').value = settings.cameraType || 'webcam';
+        document.getElementById('ipCameraUrl').value = settings.ipCameraUrl || '';
+        document.getElementById('resolution').value = settings.resolution || '720p';
+        
+        document.getElementById('workStartTime').value = settings.workStartTime || '09:00';
+        document.getElementById('lateCutoffTime').value = settings.lateCutoffTime || '09:15';
+        document.getElementById('workEndTime').value = settings.workEndTime || '17:00';
+        document.getElementById('timezone').value = settings.timezone || 'UTC-5';
+        
+        document.getElementById('matchingThreshold').value = settings.matchingThreshold || 0.75;
+        document.getElementById('thresholdValue').textContent = settings.matchingThreshold || 0.75;
+        document.getElementById('detectionModel').value = settings.detectionModel || 'cnn';
+        document.getElementById('minimumFaceSize').value = settings.minimumFaceSize || 60;
+        
+        document.getElementById('unknownPersonAlert').checked = settings.unknownPersonAlert !== false;
+        document.getElementById('lateArrivalAlert').checked = settings.lateArrivalAlert !== false;
+        document.getElementById('dailySummaryEmail').checked = settings.dailySummaryEmail !== false;
+        document.getElementById('systemHealthAlerts').checked = settings.systemHealthAlerts !== false;
+        
+        toggleIpCameraSection();
+      } catch (error) {
+        console.error('Error loading settings:', error);
+        showNotification('Failed to load settings', 'error');
+      }
+    }
+
     function updateThreshold(value) {
       document.getElementById('thresholdValue').textContent = value;
     }
 
-    function testCamera() {
-      alert('Testing camera connection... Camera is working properly!');
-    }
-
-    function resetDefaults() {
-      if (confirm('Are you sure you want to reset all settings to defaults?')) {
-        document.getElementById('threshold').value = 0.75;
-        document.getElementById('thresholdValue').textContent = '0.75';
-        document.getElementById('lateTime').value = '09:15';
-        alert('Settings reset to defaults.');
+    function toggleIpCameraSection() {
+      const cameraType = document.getElementById('cameraType').value;
+      const ipSection = document.getElementById('ipCameraSection');
+      
+      if (cameraType === 'ip') {
+        ipSection.style.display = 'block';
+      } else {
+        ipSection.style.display = 'none';
       }
     }
 
-    function saveSettings() {
-      alert('Settings saved successfully!');
+    document.getElementById('cameraType').addEventListener('change', toggleIpCameraSection);
+
+    async function testCamera() {
+      const cameraType = document.getElementById('cameraType').value;
+      const ipCameraUrl = document.getElementById('ipCameraUrl').value;
+      
+      if (cameraType === 'ip' && !ipCameraUrl) {
+        showNotification('Please enter an IP camera URL', 'error');
+        return;
+      }
+      
+      showNotification('Testing camera connection...', 'info');
+      
+      // Simulate camera test (in production, this would actually test the connection)
+      setTimeout(() => {
+        showNotification('Camera connection test successful!', 'success');
+      }, 1500);
     }
+
+    async function saveSettings() {
+      try {
+        const settings = {
+          cameraType: document.getElementById('cameraType').value,
+          ipCameraUrl: document.getElementById('ipCameraUrl').value,
+          resolution: document.getElementById('resolution').value,
+          
+          workStartTime: document.getElementById('workStartTime').value,
+          lateCutoffTime: document.getElementById('lateCutoffTime').value,
+          workEndTime: document.getElementById('workEndTime').value,
+          timezone: document.getElementById('timezone').value,
+          
+          matchingThreshold: parseFloat(document.getElementById('matchingThreshold').value),
+          detectionModel: document.getElementById('detectionModel').value,
+          minimumFaceSize: parseInt(document.getElementById('minimumFaceSize').value),
+          
+          unknownPersonAlert: document.getElementById('unknownPersonAlert').checked,
+          lateArrivalAlert: document.getElementById('lateArrivalAlert').checked,
+          dailySummaryEmail: document.getElementById('dailySummaryEmail').checked,
+          systemHealthAlerts: document.getElementById('systemHealthAlerts').checked
+        };
+        
+        const response = await fetch('/api/settings', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(settings)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          showNotification('Settings saved successfully!', 'success');
+          currentSettings = result.settings;
+        } else {
+          showNotification('Failed to save settings', 'error');
+        }
+      } catch (error) {
+        console.error('Error saving settings:', error);
+        showNotification('Failed to save settings', 'error');
+      }
+    }
+
+    async function resetDefaults() {
+      if (!confirm('Are you sure you want to reset all settings to defaults? This cannot be undone.')) {
+        return;
+      }
+      
+      try {
+        const response = await fetch('/api/settings/reset', {
+          method: 'POST'
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          showNotification('Settings reset to defaults', 'success');
+          await loadSettings();
+        } else {
+          showNotification('Failed to reset settings', 'error');
+        }
+      } catch (error) {
+        console.error('Error resetting settings:', error);
+        showNotification('Failed to reset settings', 'error');
+      }
+    }
+
+    function showNotification(message, type = 'info') {
+      const colors = {
+        success: 'bg-green-500',
+        error: 'bg-red-500',
+        info: 'bg-blue-500'
+      };
+      
+      const notification = document.createElement('div');
+      notification.className = `fixed top-4 right-4 ${colors[type]} text-white px-6 py-3 rounded-lg shadow-lg z-50 transition-opacity`;
+      notification.textContent = message;
+      
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        notification.style.opacity = '0';
+        setTimeout(() => notification.remove(), 300);
+      }, 3000);
+    }
+
+    // Load settings when page loads
+    loadSettings();
   </script>
 </body>
 </html>

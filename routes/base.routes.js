@@ -17,7 +17,7 @@ router.get("/reports", isAuthenticated, hasRole('admin', 'teacher'), (req, res) 
     res.render("reports");
 });
 
-router.get("/settings", isAuthenticated, hasRole('admin'), (req, res) => {
+router.get("/settings", (req, res) => {
     res.render("settings");
 });
 

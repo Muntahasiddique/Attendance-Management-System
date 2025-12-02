@@ -327,8 +327,31 @@
 
     async function startCamera() {
       try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
-        document.getElementById('cameraPreview').srcObject = stream;
+        // Fetch camera settings from server
+        const settingsRes = await fetch('/api/camera/stream-url');
+        const cameraSettings = await settingsRes.json();
+        
+        const video = document.getElementById('cameraPreview');
+        
+        if (cameraSettings.cameraType === 'ip' && cameraSettings.streamUrl) {
+          // Use IP camera via RTSP
+          // Note: Browsers cannot directly play RTSP streams
+          // For production, you would need to set up a streaming server (like ffmpeg)
+          // that converts RTSP to HLS or WebRTC
+          
+          // For now, show a message and use a canvas-based approach
+          // In production, replace this with actual RTSP-to-web stream conversion
+          alert('IP Camera mode is enabled. Note: Direct RTSP streaming requires a media server.\n\nURL: ' + cameraSettings.streamUrl + '\n\nFalling back to webcam for now.');
+          
+          // Fall back to webcam for now
+          stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+          video.srcObject = stream;
+        } else {
+          // Use built-in webcam
+          stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
+          video.srcObject = stream;
+        }
+        
         document.getElementById('cameraOff').style.display = 'none';
         document.getElementById('captureBtn').disabled = false;
         document.getElementById('captureBtn').classList.remove('cursor-not-allowed', 'text-muted');
@@ -336,6 +359,7 @@
         document.getElementById('startCameraBtn').textContent = 'Camera Active';
         document.getElementById('startCameraBtn').disabled = true;
       } catch (err) {
+        console.error('Camera error:', err);
         alert('Unable to access camera. Please check permissions.');
       }
     }
