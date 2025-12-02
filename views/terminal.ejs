@@ -61,6 +61,7 @@
           
           <div class="relative bg-black aspect-video">
             <video id="videoElement" class="w-full h-full object-cover" autoplay muted playsinline></video>
+            <img id="ipCameraElement" class="w-full h-full object-cover hidden" />
             <canvas id="overlay" class="absolute top-0 left-0 w-full h-full"></canvas>
             
             <div id="cameraOff" class="absolute inset-0 flex flex-col items-center justify-center bg-background">
@@ -110,7 +111,6 @@
     let selectedClassId = null;
     let selectedCourseId = null;
     let faceMatcher = null;
-    let jsmpegPlayer = null; // JSMpeg player for RTSP stream
     let isUsingIPCamera = false;
 
     async function loadTeacherData() {
@@ -123,13 +123,10 @@
         
         const data = await response.json();
         
-        console.log('Teacher data loaded:', data);
-        
         const classSelect = document.getElementById('classSelect');
         classSelect.innerHTML = '<option value="">Choose a class...</option>';
         
         if (!data.classes || data.classes.length === 0) {
-          console.warn('No classes found for this teacher');
           const option = document.createElement('option');
           option.value = '';
           option.textContent = 'No classes assigned';
@@ -145,8 +142,6 @@
           option.dataset.courses = JSON.stringify(cls.courses);
           classSelect.appendChild(option);
         });
-        
-        console.log(`Loaded ${data.classes.length} classes`);
       } catch (error) {
         console.error('Error loading teacher data:', error);
         alert('Failed to load teacher data: ' + error.message);
@@ -256,60 +251,28 @@
           const cameraSettings = await settingsRes.json();
           
           const video = document.getElementById('videoElement');
+          const ipImg = document.getElementById('ipCameraElement');
           const cameraOffDiv = document.getElementById('cameraOff');
           
           if (cameraSettings.cameraType === 'ip' && cameraSettings.streamUrl) {
-            // Start RTSP stream on server
-            const startStreamRes = await fetch('/api/camera/start-stream', { method: 'POST' });
-            const streamData = await startStreamRes.json();
-            
-            if (!streamData.success) {
-              throw new Error(streamData.message || 'Failed to start IP camera stream');
-            }
-            
-            // Use IP camera via WebSocket
+            // Use IP camera via MJPEG HTTP stream (simple like Python cv2)
             isUsingIPCamera = true;
             
-            // Hide video element
+            // Hide video element and show img
             video.style.display = 'none';
-            
-            // Create canvas for JSMpeg if it doesn't exist
-            let jsmpegCanvas = document.getElementById('jsmpegCanvas');
-            if (!jsmpegCanvas) {
-              jsmpegCanvas = document.createElement('canvas');
-              jsmpegCanvas.id = 'jsmpegCanvas';
-              jsmpegCanvas.className = 'w-full aspect-video bg-black rounded-lg';
-              video.parentElement.insertBefore(jsmpegCanvas, video);
-            }
-            
-            // Connect to WebSocket stream
-            const wsUrl = `ws://${window.location.hostname}:${cameraSettings.wsPort}`;
-            
-            // Load JSMpeg if not already loaded
-            if (typeof JSMpeg === 'undefined') {
-              await loadScript('/scripts/jsmpeg.min.js');
-            }
-            
-            jsmpegPlayer = new JSMpeg.Player(wsUrl, {
-              canvas: jsmpegCanvas,
-              autoplay: true,
-              audio: false,
-              loop: true
-            });
+            ipImg.style.display = 'block';
+            ipImg.src = '/api/camera/stream';
             
             cameraOffDiv.style.display = 'none';
             
-            console.log('IP camera connected via WebSocket');
+            console.log('IP camera connected via MJPEG stream');
           } else {
             // Use built-in webcam
             isUsingIPCamera = false;
             stream = await navigator.mediaDevices.getUserMedia({ video: { width: 1280, height: 720 } });
             video.srcObject = stream;
             video.style.display = 'block';
-            
-            // Remove JSMpeg canvas if it exists
-            const jsmpegCanvas = document.getElementById('jsmpegCanvas');
-            if (jsmpegCanvas) jsmpegCanvas.remove();
+            ipImg.style.display = 'none';
             
             cameraOffDiv.style.display = 'none';
           }
@@ -336,16 +299,6 @@
         }
       }
     }
-    
-    function loadScript(src) {
-      return new Promise((resolve, reject) => {
-        const script = document.createElement('script');
-        script.src = src;
-        script.onload = resolve;
-        script.onerror = reject;
-        document.head.appendChild(script);
-      });
-    }
 
     function stopRecognition() {
       isRecognitionActive = false;
@@ -356,25 +309,17 @@
         stream = null;
       }
       
-      // Stop IP camera stream
-      if (jsmpegPlayer) {
-        jsmpegPlayer.destroy();
-        jsmpegPlayer = null;
-      }
-      
-      // Stop server-side RTSP stream
+      // Stop IP camera
       if (isUsingIPCamera) {
-        fetch('/api/camera/stop-stream', { method: 'POST' })
-          .catch(err => console.error('Error stopping stream:', err));
+        const ipImg = document.getElementById('ipCameraElement');
+        ipImg.src = '';
+        ipImg.style.display = 'none';
+        isUsingIPCamera = false;
       }
       
       const video = document.getElementById('videoElement');
       video.srcObject = null;
       video.style.display = 'block';
-      
-      // Remove JSMpeg canvas
-      const jsmpegCanvas = document.getElementById('jsmpegCanvas');
-      if (jsmpegCanvas) jsmpegCanvas.remove();
       
       document.getElementById('cameraOff').style.display = 'flex';
       const canvas = document.getElementById('overlay');
@@ -390,34 +335,52 @@
       stopBtn.classList.add('hidden');
       
       updateStatus('standby', 'Standby');
-    } updateStatus('standby', 'Standby');
-    
+    }
 
     async function recognizeFaces() {
       if (!isRecognitionActive) return;
       
       const video = document.getElementById('videoElement');
-      const jsmpegCanvas = document.getElementById('jsmpegCanvas');
-      const sourceElement = isUsingIPCamera ? jsmpegCanvas : video;
+      const ipImg = document.getElementById('ipCameraElement');
       
-      const canvas = document.getElementById('overlay');
-      const displaySize = { 
-        width: sourceElement.offsetWidth || sourceElement.width, 
-        height: sourceElement.offsetHeight || sourceElement.height 
-      };
+      // Wait for source element to be ready
+      if (isUsingIPCamera && !ipImg.complete) {
+        setTimeout(recognizeFaces, 100);
+        return;
+      } else if (!isUsingIPCamera && !video.videoWidth) {
+        setTimeout(recognizeFaces, 100);
+        return;
+      }
       
-      canvas.width = displaySize.width;
-      canvas.height = displaySize.height;
-      faceapi.matchDimensions(canvas, displaySize);
+      const overlayCanvas = document.getElementById('overlay');
+      
+      const displaySize = isUsingIPCamera
+        ? { width: ipImg.naturalWidth || 1280, height: ipImg.naturalHeight || 720 }
+        : { width: video.videoWidth || 1280, height: video.videoHeight || 720 };
+      
+      overlayCanvas.width = displaySize.width;
+      overlayCanvas.height = displaySize.height;
+      faceapi.matchDimensions(overlayCanvas, displaySize);
       
       const detectFaces = async () => {
         if (!isRecognitionActive) return;
         
+        const sourceElement = isUsingIPCamera ? ipImg : video;
+        
+        // Check if source is ready
+        if (isUsingIPCamera && !ipImg.complete) {
+          setTimeout(detectFaces, 100);
+          return;
+        } else if (!isUsingIPCamera && !video.videoWidth) {
+          setTimeout(detectFaces, 100);
+          return;
+        }
+        
         const detections = await faceapi.detectAllFaces(sourceElement, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptors();
         const resizedDetections = faceapi.resizeResults(detections, displaySize);
         
-        const ctx = canvas.getContext('2d');
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const ctx = overlayCanvas.getContext('2d');
+        ctx.clearRect(0, 0, overlayCanvas.width, overlayCanvas.height);
         
         resizedDetections.forEach(detection => {
           const bestMatch = faceMatcher.findBestMatch(detection.descriptor);

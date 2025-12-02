@@ -80,7 +80,8 @@
 
         <!-- Camera Preview -->
         <div class="relative bg-background rounded-xl overflow-hidden mb-6 aspect-video">
-          <video id="cameraPreview" class="w-full h-full object-cover" autoplay muted playsinline></video>
+          <video id="cameraPreview" class="w-full h-full object-cover hidden" autoplay muted playsinline></video>
+          <img id="ipCameraPreview" class="w-full h-full object-cover hidden" />
           
           <!-- Face Guide Overlay -->
           <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
@@ -190,7 +191,6 @@
     let capturedDescriptors = [];
     let capturedImages = []; // Store captured/uploaded images as blobs
     let imageIndexMap = {}; // Maps sample index to capturedImages array index
-    let jsmpegPlayer = null; // JSMpeg player for RTSP stream
     let isUsingIPCamera = false;
 
     function deleteImage(sampleIndex) {
@@ -341,60 +341,28 @@
         const cameraSettings = await settingsRes.json();
         
         const video = document.getElementById('cameraPreview');
+        const ipImg = document.getElementById('ipCameraPreview');
         const cameraOffDiv = document.getElementById('cameraOff');
         
         if (cameraSettings.cameraType === 'ip' && cameraSettings.streamUrl) {
-          // Start RTSP stream on server
-          const startStreamRes = await fetch('/api/camera/start-stream', { method: 'POST' });
-          const streamData = await startStreamRes.json();
-          
-          if (!streamData.success) {
-            throw new Error(streamData.message || 'Failed to start IP camera stream');
-          }
-          
-          // Use IP camera via WebSocket
+          // Use IP camera via MJPEG HTTP stream (simple like Python cv2)
           isUsingIPCamera = true;
           
-          // Hide video element and show canvas
+          // Hide video element and show img
           video.style.display = 'none';
-          
-          // Create canvas for JSMpeg
-          let canvas = document.getElementById('jsmpegCanvas');
-          if (!canvas) {
-            canvas = document.createElement('canvas');
-            canvas.id = 'jsmpegCanvas';
-            canvas.className = 'w-full aspect-video bg-black rounded-lg';
-            video.parentElement.insertBefore(canvas, video);
-          }
-          
-          // Connect to WebSocket stream
-          const wsUrl = `ws://${window.location.hostname}:${cameraSettings.wsPort}`;
-          
-          // Load JSMpeg if not already loaded
-          if (typeof JSMpeg === 'undefined') {
-            await loadScript('/scripts/jsmpeg.min.js');
-          }
-          
-          jsmpegPlayer = new JSMpeg.Player(wsUrl, {
-            canvas: canvas,
-            autoplay: true,
-            audio: false,
-            loop: true
-          });
+          ipImg.style.display = 'block';
+          ipImg.src = '/api/camera/stream';
           
           cameraOffDiv.style.display = 'none';
           
-          console.log('IP camera connected via WebSocket');
+          console.log('IP camera connected via MJPEG stream');
         } else {
           // Use built-in webcam
           isUsingIPCamera = false;
           stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
           video.srcObject = stream;
           video.style.display = 'block';
-          
-          // Remove canvas if it exists
-          const canvas = document.getElementById('jsmpegCanvas');
-          if (canvas) canvas.remove();
+          ipImg.style.display = 'none';
           
           cameraOffDiv.style.display = 'none';
         }
@@ -421,16 +389,11 @@
         stream = null;
       }
       
-      // Stop IP camera stream
-      if (jsmpegPlayer) {
-        jsmpegPlayer.destroy();
-        jsmpegPlayer = null;
-      }
-      
-      // Stop server-side RTSP stream
+      // Stop IP camera
       if (isUsingIPCamera) {
-        fetch('/api/camera/stop-stream', { method: 'POST' })
-          .catch(err => console.error('Error stopping stream:', err));
+        const ipImg = document.getElementById('ipCameraPreview');
+        ipImg.src = '';
+        ipImg.style.display = 'none';
         isUsingIPCamera = false;
       }
       
@@ -438,10 +401,6 @@
       const video = document.getElementById('cameraPreview');
       video.srcObject = null;
       video.style.display = 'block';
-      
-      // Remove JSMpeg canvas if exists
-      const jsmpegCanvas = document.getElementById('jsmpegCanvas');
-      if (jsmpegCanvas) jsmpegCanvas.remove();
       
       // Show camera off state
       document.getElementById('cameraOff').style.display = 'flex';
@@ -458,16 +417,6 @@
       document.getElementById('stopCameraBtn').classList.remove('flex');
     }
     
-    function loadScript(src) {
-      return new Promise((resolve, reject) => {
-        const script = document.createElement('script');
-        script.src = src;
-        script.onload = resolve;
-        script.onerror = reject;
-        document.head.appendChild(script);
-      });
-    }
-
     function captureSample() {
       if (sampleCount >= 5) return;
       
@@ -475,15 +424,22 @@
       const ctx = canvas.getContext('2d');
       
       if (isUsingIPCamera) {
-        // Capture from JSMpeg canvas
-        const jsmpegCanvas = document.getElementById('jsmpegCanvas');
-        if (!jsmpegCanvas) {
-          alert('IP camera canvas not found');
+        // Capture from IP camera img element (simple!)
+        const ipImg = document.getElementById('ipCameraPreview');
+        if (!ipImg || !ipImg.complete) {
+          alert('IP camera not ready. Please wait a moment and try again.');
           return;
         }
-        canvas.width = jsmpegCanvas.width;
-        canvas.height = jsmpegCanvas.height;
-        ctx.drawImage(jsmpegCanvas, 0, 0);
+        
+        canvas.width = ipImg.naturalWidth || 1280;
+        canvas.height = ipImg.naturalHeight || 720;
+        
+        try {
+          ctx.drawImage(ipImg, 0, 0, canvas.width, canvas.height);
+        } catch (e) {
+          alert('Failed to capture image. Please try again.');
+          return;
+        }
       } else {
         // Capture from video element
         const video = document.getElementById('cameraPreview');
@@ -581,7 +537,7 @@
         
         if (response.ok) {
           alert(`Student enrolled successfully! ${result.samplesProcessed} face samples processed and averaged into a single descriptor.`);
-          window.location.href = '/admin/manage';
+          window.location.reload();
         } else {
           alert('Error: ' + result.error);
           document.getElementById('submitBtn').disabled = false;
