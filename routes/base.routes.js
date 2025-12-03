@@ -5,7 +5,7 @@ router.get("/", (req, res) => {
     res.redirect("/dashboard");
 });
 
-router.get("/dashboard", isAuthenticated, hasRole('admin', 'teacher'), (req, res) => {
+router.get("/dashboard", isAuthenticated, (req, res) => {
     res.render("dashboard");
 });
 

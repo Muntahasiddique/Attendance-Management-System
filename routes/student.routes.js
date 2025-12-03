@@ -3,7 +3,7 @@ const { isAuthenticated, hasRole } = require('../middleware/auth');
 
 // Student Dashboard
 router.get('/dashboard', isAuthenticated, hasRole('student'), (req, res) => {
-  res.render('student/dashboard');
+  res.render('dashboard');
 });
 
 // Student Attendance View

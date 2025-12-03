@@ -15,11 +15,27 @@
     <!-- Header -->
     <div class="flex items-center justify-between mb-8">
       <div>
-        <h1 class="text-2xl font-bold text-foreground">Student Attendance Dashboard</h1>
-        <p class="text-muted mt-1">Real-time student attendance monitoring</p>
+        <h1 class="text-2xl font-bold text-foreground">
+          <% if (user.role === 'admin') { %>
+            Admin Dashboard
+          <% } else if (user.role === 'teacher') { %>
+            Teacher Dashboard
+          <% } else { %>
+            Student Dashboard
+          <% } %>
+        </h1>
+        <p class="text-muted mt-1">
+          <% if (user.role === 'admin') { %>
+            Real-time attendance monitoring for all students
+          <% } else if (user.role === 'teacher') { %>
+            Your classes attendance overview
+          <% } else { %>
+            Your personal attendance tracking
+          <% } %>
+        </p>
       </div>
       <div class="flex items-center gap-4">
-        <% if (user && user.role === 'admin') { %>
+        <% if (user && user.role === 'admin') { %> 
         <a href="/admin/manage" class="px-4 py-2 bg-primary text-background font-medium rounded-lg hover:bg-primary/90 transition-all flex items-center gap-2">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
@@ -48,9 +64,8 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
           </div>
-          <span class="text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded-full">+12%</span>
         </div>
-        <p class="text-3xl font-bold text-foreground" id="presentCount">847</p>
+        <p class="text-3xl font-bold text-foreground" id="presentCount">-</p>
         <p class="text-sm text-muted mt-1">Total Present</p>
       </div>
 
@@ -62,9 +77,8 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
           </div>
-          <span class="text-xs font-medium text-danger bg-danger/10 px-2 py-1 rounded-full">-3%</span>
         </div>
-        <p class="text-3xl font-bold text-foreground">53</p>
+        <p class="text-3xl font-bold text-foreground" id="absentCount">-</p>
         <p class="text-sm text-muted mt-1">Total Absent</p>
       </div>
 
@@ -76,23 +90,28 @@
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
             </svg>
           </div>
-          <span class="text-xs font-medium text-warning bg-warning/10 px-2 py-1 rounded-full">+5</span>
         </div>
-        <p class="text-3xl font-bold text-foreground">28</p>
+        <p class="text-3xl font-bold text-foreground" id="lateCount">-</p>
         <p class="text-sm text-muted mt-1">Late Arrivals</p>
       </div>
 
-      <!-- Enrolled Students -->
+      <!-- Enrolled Students / Total Sessions / Attendance Rate -->
       <div class="bg-card border border-border rounded-xl p-6">
         <div class="flex items-center justify-between mb-4">
           <div class="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center">
             <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <% if (user.role === 'student') { %>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+              <% } else { %>
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+              <% } %>
             </svg>
           </div>
         </div>
-        <p class="text-3xl font-bold text-foreground">900</p>
-        <p class="text-sm text-muted mt-1">Enrolled Students</p>
+        <p class="text-3xl font-bold text-foreground" id="totalCount">-</p>
+        <p class="text-sm text-muted mt-1" id="totalLabel">
+          <% if (user.role === 'student') { %>Attendance Rate<% } else { %>Enrolled Students<% } %>
+        </p>
       </div>
     </div>
 
@@ -105,159 +124,66 @@
             <h3 class="font-semibold text-foreground">Weekly Attendance</h3>
             <p class="text-sm text-muted">Last 7 days overview</p>
           </div>
-          <select class="px-3 py-2 bg-background border border-border rounded-lg text-sm text-foreground">
-            <option>This Week</option>
-            <option>Last Week</option>
-            <option>This Month</option>
-          </select>
         </div>
-        <!-- Simple Bar Chart -->
-        <div class="flex items-end justify-between h-48 gap-4">
-          <div class="flex-1 flex flex-col items-center gap-2">
-            <div class="w-full bg-primary rounded-t-lg" style="height: 85%"></div>
-            <span class="text-xs text-muted">Mon</span>
-          </div>
-          <div class="flex-1 flex flex-col items-center gap-2">
-            <div class="w-full bg-primary rounded-t-lg" style="height: 92%"></div>
-            <span class="text-xs text-muted">Tue</span>
-          </div>
-          <div class="flex-1 flex flex-col items-center gap-2">
-            <div class="w-full bg-primary rounded-t-lg" style="height: 78%"></div>
-            <span class="text-xs text-muted">Wed</span>
-          </div>
-          <div class="flex-1 flex flex-col items-center gap-2">
-            <div class="w-full bg-primary rounded-t-lg" style="height: 95%"></div>
-            <span class="text-xs text-muted">Thu</span>
-          </div>
-          <div class="flex-1 flex flex-col items-center gap-2">
-            <div class="w-full bg-primary rounded-t-lg" style="height: 88%"></div>
-            <span class="text-xs text-muted">Fri</span>
-          </div>
-          <div class="flex-1 flex flex-col items-center gap-2">
-            <div class="w-full bg-primary/30 rounded-t-lg" style="height: 45%"></div>
-            <span class="text-xs text-muted">Sat</span>
-          </div>
-          <div class="flex-1 flex flex-col items-center gap-2">
-            <div class="w-full bg-primary/30 rounded-t-lg" style="height: 20%"></div>
-            <span class="text-xs text-muted">Sun</span>
-          </div>
+        <!-- Dynamic Bar Chart -->
+        <div id="weeklyChart" class="flex items-end justify-between h-48 gap-4">
+          <div class="flex-1 text-center text-muted">Loading...</div>
         </div>
       </div>
 
       <!-- Recent Activity -->
       <div class="bg-card border border-border rounded-xl p-6">
         <div class="flex items-center justify-between mb-6">
-          <h3 class="font-semibold text-foreground">Recent Student Activity</h3>
+          <h3 class="font-semibold text-foreground">
+            <% if (user.role === 'student') { %>
+              My Recent Activity
+            <% } else { %>
+              Recent Student Activity
+            <% } %>
+          </h3>
           <span class="w-2 h-2 bg-primary rounded-full pulse-dot"></span>
         </div>
         <div class="space-y-4" id="activityFeed">
-          <div class="flex items-center gap-3 p-3 bg-background rounded-lg">
-            <div class="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary text-sm font-semibold">JD</div>
-            <div class="flex-1 min-w-0">
-              <p class="text-sm font-medium text-foreground truncate">John Doe</p>
-              <p class="text-xs text-muted">Checked in • 9:12 AM</p>
-            </div>
-            <span class="w-2 h-2 bg-primary rounded-full"></span>
-          </div>
-          <div class="flex items-center gap-3 p-3 bg-background rounded-lg">
-            <div class="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-500 text-sm font-semibold">SM</div>
-            <div class="flex-1 min-w-0">
-              <p class="text-sm font-medium text-foreground truncate">Sarah Miller</p>
-              <p class="text-xs text-muted">Checked in • 9:10 AM</p>
-            </div>
-            <span class="w-2 h-2 bg-primary rounded-full"></span>
-          </div>
-          <div class="flex items-center gap-3 p-3 bg-background rounded-lg">
-            <div class="w-10 h-10 rounded-full bg-warning/20 flex items-center justify-center text-warning text-sm font-semibold">MJ</div>
-            <div class="flex-1 min-w-0">
-              <p class="text-sm font-medium text-foreground truncate">Mike Johnson</p>
-              <p class="text-xs text-warning">Late • 9:22 AM</p>
-            </div>
-            <span class="w-2 h-2 bg-warning rounded-full"></span>
-          </div>
-          <div class="flex items-center gap-3 p-3 bg-background rounded-lg">
-            <div class="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center text-primary text-sm font-semibold">EW</div>
-            <div class="flex-1 min-w-0">
-              <p class="text-sm font-medium text-foreground truncate">Emily Wang</p>
-              <p class="text-xs text-muted">Checked in • 9:05 AM</p>
-            </div>
-            <span class="w-2 h-2 bg-primary rounded-full"></span>
+          <div class="text-center text-muted py-8">
+            <p class="text-sm">Loading activity...</p>
           </div>
         </div>
-        <a href="/reports" class="mt-4 block text-center text-sm text-primary hover:underline">View All Activity →</a>
       </div>
     </div>
 
-    <!-- Class Breakdown -->
+    <!-- Class/Course Breakdown -->
     <div class="mt-6 bg-card border border-border rounded-xl p-6">
-      <h3 class="font-semibold text-foreground mb-6">Class Breakdown</h3>
+      <h3 class="font-semibold text-foreground mb-6">
+        <% if (user.role === 'student') { %>
+          Course Breakdown
+        <% } else { %>
+          Class Breakdown
+        <% } %>
+      </h3>
       <div class="overflow-x-auto">
         <table class="w-full">
           <thead>
             <tr class="border-b border-border">
-              <th class="text-left py-3 px-4 text-sm font-medium text-muted">Class</th>
-              <th class="text-left py-3 px-4 text-sm font-medium text-muted">Total</th>
+              <th class="text-left py-3 px-4 text-sm font-medium text-muted">
+                <% if (user.role === 'student') { %>Course<% } else { %>Class<% } %>
+              </th>
+              <th class="text-left py-3 px-4 text-sm font-medium text-muted">
+                <% if (user.role === 'student') { %>Present<% } else { %>Total<% } %>
+              </th>
+              <% if (user.role !== 'student') { %>
               <th class="text-left py-3 px-4 text-sm font-medium text-muted">Present</th>
+              <% } %>
+              <% if (user.role === 'student') { %>
+              <th class="text-left py-3 px-4 text-sm font-medium text-muted">Late</th>
+              <% } else { %>
               <th class="text-left py-3 px-4 text-sm font-medium text-muted">Absent</th>
+              <% } %>
               <th class="text-left py-3 px-4 text-sm font-medium text-muted">Rate</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-border">
+          <tbody class="divide-y divide-border" id="breakdownTable">
             <tr>
-              <td class="py-3 px-4 text-sm text-foreground">BSCS5</td>
-              <td class="py-3 px-4 text-sm text-muted">250</td>
-              <td class="py-3 px-4 text-sm text-primary">238</td>
-              <td class="py-3 px-4 text-sm text-danger">12</td>
-              <td class="py-3 px-4">
-                <div class="flex items-center gap-2">
-                  <div class="flex-1 h-2 bg-background rounded-full overflow-hidden">
-                    <div class="h-full bg-primary rounded-full" style="width: 95%"></div>
-                  </div>
-                  <span class="text-sm text-foreground">95%</span>
-                </div>
-              </td>
-            </tr>
-            <tr>
-              <td class="py-3 px-4 text-sm text-foreground">BSCS4</td>
-              <td class="py-3 px-4 text-sm text-muted">150</td>
-              <td class="py-3 px-4 text-sm text-primary">142</td>
-              <td class="py-3 px-4 text-sm text-danger">8</td>
-              <td class="py-3 px-4">
-                <div class="flex items-center gap-2">
-                  <div class="flex-1 h-2 bg-background rounded-full overflow-hidden">
-                    <div class="h-full bg-primary rounded-full" style="width: 94%"></div>
-                  </div>
-                  <span class="text-sm text-foreground">94%</span>
-                </div>
-              </td>
-            </tr>
-            <tr>
-              <td class="py-3 px-4 text-sm text-foreground">BSCS6</td>
-              <td class="py-3 px-4 text-sm text-muted">300</td>
-              <td class="py-3 px-4 text-sm text-primary">275</td>
-              <td class="py-3 px-4 text-sm text-danger">25</td>
-              <td class="py-3 px-4">
-                <div class="flex items-center gap-2">
-                  <div class="flex-1 h-2 bg-background rounded-full overflow-hidden">
-                    <div class="h-full bg-primary rounded-full" style="width: 91%"></div>
-                  </div>
-                  <span class="text-sm text-foreground">91%</span>
-                </div>
-              </td>
-            </tr>
-            <tr>
-              <td class="py-3 px-4 text-sm text-foreground">BSCS7</td>
-              <td class="py-3 px-4 text-sm text-muted">200</td>
-              <td class="py-3 px-4 text-sm text-primary">192</td>
-              <td class="py-3 px-4 text-sm text-danger">8</td>
-              <td class="py-3 px-4">
-                <div class="flex items-center gap-2">
-                  <div class="flex-1 h-2 bg-background rounded-full overflow-hidden">
-                    <div class="h-full bg-primary rounded-full" style="width: 96%"></div>
-                  </div>
-                  <span class="text-sm text-foreground">96%</span>
-                </div>
-              </td>
+              <td colspan="<% if (user.role === 'student') { %>4<% } else { %>5<% } %>" class="py-8 text-center text-muted">Loading...</td>
             </tr>
           </tbody>
         </table>
@@ -266,6 +192,8 @@
   </main>
 
   <script>
+    const userRole = '<%= user.role %>';
+    
     // Update time
     function updateTime() {
       const now = new Date();
@@ -275,14 +203,190 @@
     setInterval(updateTime, 1000);
     updateTime();
 
-    // Simulate live updates
-    let presentCount = 847;
-    setInterval(() => {
-      if (Math.random() > 0.7) {
-        presentCount++;
-        document.getElementById('presentCount').textContent = presentCount;
+    // Load dashboard data based on role
+    async function loadDashboardData() {
+      try {
+        let endpoint;
+        switch(userRole) {
+          case 'admin':
+            endpoint = '/dashboard/api/dashboard/admin-stats';
+            break;
+          case 'teacher':
+            endpoint = '/dashboard/api/dashboard/teacher-stats';
+            break;
+          case 'student':
+            endpoint = '/dashboard/api/dashboard/student-stats';
+            break;
+          default:
+            console.error('Unknown user role:', userRole);
+            return;
+        }
+
+        console.log('Fetching dashboard data from:', endpoint);
+        const response = await fetch(endpoint);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('Dashboard data received:', data);
+
+        // Update stats
+        document.getElementById('presentCount').textContent = data.presentCount || 0;
+        document.getElementById('absentCount').textContent = data.absentCount || 0;
+        document.getElementById('lateCount').textContent = data.lateCount || 0;
+        
+        if (userRole === 'student') {
+          document.getElementById('totalCount').textContent = (data.attendanceRate || 0) + '%';
+        } else {
+          document.getElementById('totalCount').textContent = data.totalStudents || 0;
+        }
+
+        // Update recent activity
+        updateActivity(data.recentActivity || []);
+
+        // Update weekly chart
+        updateWeeklyChart(data.weeklyData || []);
+
+        // Update breakdown
+        if (userRole === 'student') {
+          updateCourseBreakdown(data.courseBreakdown || []);
+        } else {
+          updateClassBreakdown(data.classBreakdown || []);
+        }
+
+      } catch (error) {
+        console.error('Error loading dashboard data:', error);
       }
-    }, 5000);
+    }
+
+    function updateActivity(activities) {
+      const feed = document.getElementById('activityFeed');
+      
+      if (activities.length === 0) {
+        feed.innerHTML = '<div class="text-center text-muted py-8"><p class="text-sm">No recent activity</p></div>';
+        return;
+      }
+
+      feed.innerHTML = activities.map(activity => {
+        const initials = userRole === 'student' 
+          ? (activity.courseName ? activity.courseName.substring(0, 2).toUpperCase() : 'NA')
+          : (activity.studentName ? activity.studentName.split(' ').map(n => n[0]).join('') : 'NA');
+        const statusColor = activity.status === 'present' ? 'primary' : (activity.status === 'late' ? 'warning' : 'danger');
+        const time = new Date(activity.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+        
+        if (userRole === 'student') {
+          return `
+            <div class="flex items-center gap-3 p-3 bg-background rounded-lg">
+              <div class="w-10 h-10 rounded-full bg-${statusColor}/20 flex items-center justify-center text-${statusColor} text-xs font-semibold">${initials}</div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-foreground truncate">${activity.courseName}</p>
+                <p class="text-xs text-muted">${activity.className}</p>
+              </div>
+              <div class="text-right">
+                <span class="text-xs font-medium text-${statusColor}">${activity.status.toUpperCase()}</span>
+                <p class="text-xs text-muted">${time}</p>
+              </div>
+            </div>
+          `;
+        } else {
+          return `
+            <div class="flex items-center gap-3 p-3 bg-background rounded-lg">
+              <div class="w-10 h-10 rounded-full bg-${statusColor}/20 flex items-center justify-center text-${statusColor} text-sm font-semibold">${initials}</div>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-medium text-foreground truncate">${activity.studentName}</p>
+                <p class="text-xs text-muted">${activity.courseName} - ${activity.className}</p>
+              </div>
+              <div class="text-right">
+                <span class="text-xs font-medium text-${statusColor}">${activity.status.toUpperCase()}</span>
+                <p class="text-xs text-muted">${time}</p>
+              </div>
+            </div>
+          `;
+        }
+      }).join('');
+    }
+
+    function updateWeeklyChart(weeklyData) {
+      const chart = document.getElementById('weeklyChart');
+      
+      if (weeklyData.length === 0) {
+        chart.innerHTML = '<div class="flex-1 text-center text-muted">No data available</div>';
+        return;
+      }
+
+      const maxValue = Math.max(...weeklyData.map(d => (d.present || 0) + (d.late || 0) + (d.absent || 0)));
+      
+      chart.innerHTML = weeklyData.map(day => {
+        const total = (day.present || 0) + (day.late || 0) + (day.absent || 0);
+        const height = maxValue > 0 ? (total / maxValue * 100) : 10;
+        
+        return `
+          <div class="flex-1 flex flex-col items-center gap-2">
+            <div class="w-full bg-primary rounded-t-lg" style="height: ${height}%"></div>
+            <span class="text-xs text-muted">${day.dayName}</span>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function updateClassBreakdown(breakdown) {
+      const table = document.getElementById('breakdownTable');
+      
+      if (breakdown.length === 0) {
+        table.innerHTML = '<tr><td colspan="5" class="py-8 text-center text-muted">No data available</td></tr>';
+        return;
+      }
+
+      table.innerHTML = breakdown.map(item => `
+        <tr>
+          <td class="py-3 px-4 text-sm text-foreground">${item.className}</td>
+          <td class="py-3 px-4 text-sm text-muted">${item.totalStudents}</td>
+          <td class="py-3 px-4 text-sm text-primary">${item.presentToday}</td>
+          <td class="py-3 px-4 text-sm text-danger">${item.totalStudents - item.presentToday}</td>
+          <td class="py-3 px-4">
+            <div class="flex items-center gap-2">
+              <div class="flex-1 h-2 bg-background rounded-full overflow-hidden">
+                <div class="h-full bg-primary rounded-full" style="width: ${item.attendanceRate}%"></div>
+              </div>
+              <span class="text-sm text-foreground">${item.attendanceRate}%</span>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function updateCourseBreakdown(breakdown) {
+      const table = document.getElementById('breakdownTable');
+      
+      if (breakdown.length === 0) {
+        table.innerHTML = '<tr><td colspan="4" class="py-8 text-center text-muted">No data available</td></tr>';
+        return;
+      }
+
+      table.innerHTML = breakdown.map(item => `
+        <tr>
+          <td class="py-3 px-4 text-sm text-foreground">${item.courseName} (${item.courseCode})</td>
+          <td class="py-3 px-4 text-sm text-primary">${item.present}</td>
+          <td class="py-3 px-4 text-sm text-warning">${item.late}</td>
+          <td class="py-3 px-4">
+            <div class="flex items-center gap-2">
+              <div class="flex-1 h-2 bg-background rounded-full overflow-hidden">
+                <div class="h-full bg-primary rounded-full" style="width: ${item.attendanceRate}%"></div>
+              </div>
+              <span class="text-sm text-foreground">${item.attendanceRate}%</span>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    // Load data on page load
+    loadDashboardData();
+
+    // Refresh data every 30 seconds
+    setInterval(loadDashboardData, 30000);
   </script>
 </body>
 </html>

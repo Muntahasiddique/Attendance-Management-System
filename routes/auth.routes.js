@@ -5,10 +5,7 @@ const { Admin, Student } = require('../models');
 // Login Page
 router.get('/login', (req, res) => {
   if (req.session && req.session.userId) {
-    // Redirect based on role
-    if (req.session.role === 'student') {
-      return res.redirect('/student/dashboard');
-    }
+    // Redirect all authenticated users to main dashboard
     return res.redirect('/dashboard');
   }
   res.render('login', { error: null });
@@ -61,8 +58,8 @@ router.post('/login', async (req, res) => {
     req.session.email = user.email;
     req.session.role = userType === 'student' ? 'student' : user.role;
 
-    // Return redirect URL based on role
-    const redirectUrl = userType === 'student' ? '/student/dashboard' : '/dashboard';
+    // Return redirect URL - all users go to main dashboard
+    const redirectUrl = '/dashboard';
     res.json({ success: true, redirect: redirectUrl, role: req.session.role });
 
   } catch (error) {
