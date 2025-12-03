@@ -13,7 +13,7 @@ router.get("/enrollment", isAuthenticated, hasRole('admin', 'teacher'), (req, re
     res.render("enrollment");
 });
 
-router.get("/reports", isAuthenticated, hasRole('admin', 'teacher'), (req, res) => {
+router.get("/reports", isAuthenticated, hasRole('admin', 'teacher', 'student'), (req, res) => {
     res.render("reports");
 });
 

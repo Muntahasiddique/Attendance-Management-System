@@ -218,11 +218,9 @@
             endpoint = '/dashboard/api/dashboard/student-stats';
             break;
           default:
-            console.error('Unknown user role:', userRole);
             return;
         }
 
-        console.log('Fetching dashboard data from:', endpoint);
         const response = await fetch(endpoint);
         
         if (!response.ok) {
@@ -230,7 +228,6 @@
         }
         
         const data = await response.json();
-        console.log('Dashboard data received:', data);
 
         // Update stats
         document.getElementById('presentCount').textContent = data.presentCount || 0;

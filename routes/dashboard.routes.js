@@ -208,26 +208,19 @@ router.get('/api/dashboard/teacher-stats', isAuthenticated, hasRole('teacher'), 
 router.get('/api/dashboard/student-stats', isAuthenticated, hasRole('student'), async (req, res) => {
   try {
     const studentId = req.session.userId;
-    console.log('Loading student stats for:', studentId);
-    
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
     // Get student info
     const student = await Student.findById(studentId).populate('classRef').lean();
     if (!student) {
-      console.error('Student not found:', studentId);
       return res.status(404).json({ error: 'Student not found' });
     }
-    
-    console.log('Student found:', student.fullName, 'Class:', student.classRef?.name);
 
     // Get student's courses based on their class
     const courses = await Course.find({ classRef: student.classRef._id }).lean();
     const courseIds = courses.map(c => c._id);
     const totalCourses = courses.length;
-    
-    console.log('Total courses for student class:', totalCourses);
 
     // Personal attendance stats (all time)
     const allAttendance = await Attendance.find({ studentRef: studentId }).lean();

@@ -32,28 +32,25 @@
     <!-- Filters -->
     <div class="bg-card border border-border rounded-xl p-6 mb-6">
       <h3 class="font-semibold text-foreground mb-4">Filter Records</h3>
+      <% if (user.role === 'admin' || user.role === 'teacher') { %>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
         <div>
           <label class="block text-sm font-medium text-muted mb-2">Date From</label>
-          <input type="date" value="2025-11-01" class="w-full px-4 py-2.5 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+          <input type="date" id="dateFrom" class="w-full px-4 py-2.5 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
         </div>
         <div>
           <label class="block text-sm font-medium text-muted mb-2">Date To</label>
-          <input type="date" value="2025-11-30" class="w-full px-4 py-2.5 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+          <input type="date" id="dateTo" class="w-full px-4 py-2.5 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
         </div>
         <div>
           <label class="block text-sm font-medium text-muted mb-2">Class</label>
-          <select class="w-full px-4 py-2.5 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+          <select id="classFilter" class="w-full px-4 py-2.5 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
             <option value="">All Classes</option>
-            <option value="BSCS5">BSCS5</option>
-            <option value="BSCS4">BSCS4</option>
-            <option value="BSCS6">BSCS6</option>
-            <option value="BSCS7">BSCS7</option>
           </select>
         </div>
         <div>
           <label class="block text-sm font-medium text-muted mb-2">Status</label>
-          <select class="w-full px-4 py-2.5 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+          <select id="statusFilter" class="w-full px-4 py-2.5 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
             <option value="">All Status</option>
             <option value="present">Present</option>
             <option value="late">Late</option>
@@ -63,13 +60,34 @@
         <div>
           <label class="block text-sm font-medium text-muted mb-2">Search</label>
           <div class="relative">
-            <input type="text" placeholder="Name or ID..." class="w-full px-4 py-2.5 pl-10 bg-background border border-border rounded-lg text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+            <input type="text" id="searchInput" placeholder="Name or ID..." class="w-full px-4 py-2.5 pl-10 bg-background border border-border rounded-lg text-foreground placeholder-muted focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
             <svg class="w-5 h-5 text-muted absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
             </svg>
           </div>
         </div>
       </div>
+      <% } else { %>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-muted mb-2">Date From</label>
+          <input type="date" id="dateFrom" class="w-full px-4 py-2.5 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-muted mb-2">Date To</label>
+          <input type="date" id="dateTo" class="w-full px-4 py-2.5 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-muted mb-2">Status</label>
+          <select id="statusFilter" class="w-full px-4 py-2.5 bg-background border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent">
+            <option value="">All Status</option>
+            <option value="present">Present</option>
+            <option value="late">Late</option>
+            <option value="absent">Absent</option>
+          </select>
+        </div>
+      </div>
+      <% } %>
       <div class="mt-4 flex justify-end">
         <button onclick="applyFilters()" class="py-2.5 px-6 bg-primary text-background font-medium rounded-lg hover:bg-primary/90 transition-all">
           Apply Filters
@@ -86,7 +104,7 @@
           </svg>
         </div>
         <div>
-          <p class="text-2xl font-bold text-foreground">2,847</p>
+          <p class="text-2xl font-bold text-foreground" id="totalRecords">0</p>
           <p class="text-sm text-muted">Total Records</p>
         </div>
       </div>
@@ -97,7 +115,7 @@
           </svg>
         </div>
         <div>
-          <p class="text-2xl font-bold text-foreground">94.2%</p>
+          <p class="text-2xl font-bold text-foreground" id="avgAttendance">0%</p>
           <p class="text-sm text-muted">Avg. Attendance</p>
         </div>
       </div>
@@ -108,7 +126,7 @@
           </svg>
         </div>
         <div>
-          <p class="text-2xl font-bold text-foreground">156</p>
+          <p class="text-2xl font-bold text-foreground" id="lateEntries">0</p>
           <p class="text-sm text-muted">Late Entries</p>
         </div>
       </div>
@@ -119,7 +137,7 @@
           </svg>
         </div>
         <div>
-          <p class="text-2xl font-bold text-foreground">89</p>
+          <p class="text-2xl font-bold text-foreground" id="absences">0</p>
           <p class="text-sm text-muted">Absences</p>
         </div>
       </div>
@@ -131,144 +149,20 @@
         <table class="w-full">
           <thead class="bg-background">
             <tr>
-              <th class="text-left py-4 px-6 text-sm font-medium text-muted">
-                <input type="checkbox" class="rounded border-border bg-background">
-              </th>
+              <% if (user.role === 'admin' || user.role === 'teacher') { %>
               <th class="text-left py-4 px-6 text-sm font-medium text-muted">Student</th>
               <th class="text-left py-4 px-6 text-sm font-medium text-muted">ID</th>
+              <% } %>
               <th class="text-left py-4 px-6 text-sm font-medium text-muted">Class</th>
+              <th class="text-left py-4 px-6 text-sm font-medium text-muted">Course</th>
               <th class="text-left py-4 px-6 text-sm font-medium text-muted">Date</th>
               <th class="text-left py-4 px-6 text-sm font-medium text-muted">Check In</th>
-              <th class="text-left py-4 px-6 text-sm font-medium text-muted">Check Out</th>
               <th class="text-left py-4 px-6 text-sm font-medium text-muted">Status</th>
-              <th class="text-left py-4 px-6 text-sm font-medium text-muted">Actions</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-border">
-            <tr class="hover:bg-background/50 transition-colors">
-              <td class="py-4 px-6"><input type="checkbox" class="rounded border-border bg-background"></td>
-              <td class="py-4 px-6">
-                <div class="flex items-center gap-3">
-                  <div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary text-xs font-semibold">JD</div>
-                  <span class="text-sm text-foreground">John Doe</span>
-                </div>
-              </td>
-              <td class="py-4 px-6 text-sm text-muted">STU-001</td>
-              <td class="py-4 px-6 text-sm text-foreground">BSCS5</td>
-              <td class="py-4 px-6 text-sm text-foreground">Nov 30, 2025</td>
-              <td class="py-4 px-6 text-sm text-foreground">08:45 AM</td>
-              <td class="py-4 px-6 text-sm text-foreground">05:30 PM</td>
-              <td class="py-4 px-6">
-                <span class="px-2.5 py-1 text-xs font-medium rounded-full bg-primary/10 text-primary">Present</span>
-              </td>
-              <td class="py-4 px-6">
-                <button class="text-muted hover:text-foreground">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                  </svg>
-                </button>
-              </td>
-            </tr>
-            <tr class="hover:bg-background/50 transition-colors">
-              <td class="py-4 px-6"><input type="checkbox" class="rounded border-border bg-background"></td>
-              <td class="py-4 px-6">
-                <div class="flex items-center gap-3">
-                  <div class="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-500 text-xs font-semibold">SM</div>
-                  <span class="text-sm text-foreground">Sarah Miller</span>
-                </div>
-              </td>
-              <td class="py-4 px-6 text-sm text-muted">STU-002</td>
-              <td class="py-4 px-6 text-sm text-foreground">BSCS4</td>
-              <td class="py-4 px-6 text-sm text-foreground">Nov 30, 2025</td>
-              <td class="py-4 px-6 text-sm text-foreground">09:02 AM</td>
-              <td class="py-4 px-6 text-sm text-foreground">06:15 PM</td>
-              <td class="py-4 px-6">
-                <span class="px-2.5 py-1 text-xs font-medium rounded-full bg-primary/10 text-primary">Present</span>
-              </td>
-              <td class="py-4 px-6">
-                <button class="text-muted hover:text-foreground">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                  </svg>
-                </button>
-              </td>
-            </tr>
-            <tr class="hover:bg-background/50 transition-colors">
-              <td class="py-4 px-6"><input type="checkbox" class="rounded border-border bg-background"></td>
-              <td class="py-4 px-6">
-                <div class="flex items-center gap-3">
-                  <div class="w-8 h-8 rounded-full bg-warning/20 flex items-center justify-center text-warning text-xs font-semibold">MJ</div>
-                  <span class="text-sm text-foreground">Mike Johnson</span>
-                </div>
-              </td>
-              <td class="py-4 px-6 text-sm text-muted">STU-003</td>
-              <td class="py-4 px-6 text-sm text-foreground">BSCS6</td>
-              <td class="py-4 px-6 text-sm text-foreground">Nov 30, 2025</td>
-              <td class="py-4 px-6 text-sm text-warning">09:22 AM</td>
-              <td class="py-4 px-6 text-sm text-foreground">05:45 PM</td>
-              <td class="py-4 px-6">
-                <span class="px-2.5 py-1 text-xs font-medium rounded-full bg-warning/10 text-warning">Late</span>
-              </td>
-              <td class="py-4 px-6">
-                <button class="text-muted hover:text-foreground">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                  </svg>
-                </button>
-              </td>
-            </tr>
-            <tr class="hover:bg-background/50 transition-colors">
-              <td class="py-4 px-6"><input type="checkbox" class="rounded border-border bg-background"></td>
-              <td class="py-4 px-6">
-                <div class="flex items-center gap-3">
-                  <div class="w-8 h-8 rounded-full bg-danger/20 flex items-center justify-center text-danger text-xs font-semibold">RB</div>
-                  <span class="text-sm text-foreground">Rachel Brown</span>
-                </div>
-              </td>
-              <td class="py-4 px-6 text-sm text-muted">STU-004</td>
-              <td class="py-4 px-6 text-sm text-foreground">BSCS7</td>
-              <td class="py-4 px-6 text-sm text-foreground">Nov 30, 2025</td>
-              <td class="py-4 px-6 text-sm text-muted">—</td>
-              <td class="py-4 px-6 text-sm text-muted">—</td>
-              <td class="py-4 px-6">
-                <span class="px-2.5 py-1 text-xs font-medium rounded-full bg-danger/10 text-danger">Absent</span>
-              </td>
-              <td class="py-4 px-6">
-                <button class="text-muted hover:text-foreground">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                  </svg>
-                </button>
-              </td>
-            </tr>
-            <tr class="hover:bg-background/50 transition-colors">
-              <td class="py-4 px-6"><input type="checkbox" class="rounded border-border bg-background"></td>
-              <td class="py-4 px-6">
-                <div class="flex items-center gap-3">
-                  <div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary text-xs font-semibold">EW</div>
-                  <span class="text-sm text-foreground">Emily Wang</span>
-                </div>
-              </td>
-              <td class="py-4 px-6 text-sm text-muted">STU-005</td>
-              <td class="py-4 px-6 text-sm text-foreground">BSCS5</td>
-              <td class="py-4 px-6 text-sm text-foreground">Nov 30, 2025</td>
-              <td class="py-4 px-6 text-sm text-foreground">08:30 AM</td>
-              <td class="py-4 px-6 text-sm text-foreground">05:15 PM</td>
-              <td class="py-4 px-6">
-                <span class="px-2.5 py-1 text-xs font-medium rounded-full bg-primary/10 text-primary">Present</span>
-              </td>
-              <td class="py-4 px-6">
-                <button class="text-muted hover:text-foreground">
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                  </svg>
-                </button>
-              </td>
+          <tbody id="reportTableBody" class="divide-y divide-border">
+            <tr>
+              <td colspan="7" class="py-8 text-center text-muted">Loading records...</td>
             </tr>
           </tbody>
         </table>
@@ -276,38 +170,233 @@
       
       <!-- Pagination -->
       <div class="flex items-center justify-between px-6 py-4 border-t border-border">
-        <p class="text-sm text-muted">Showing 1-5 of 2,847 records</p>
-        <div class="flex items-center gap-2">
-          <button class="p-2 rounded-lg bg-background border border-border text-muted hover:text-foreground transition-colors">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-            </svg>
-          </button>
-          <button class="px-3 py-1.5 rounded-lg bg-primary text-background font-medium">1</button>
-          <button class="px-3 py-1.5 rounded-lg bg-background border border-border text-foreground hover:bg-card">2</button>
-          <button class="px-3 py-1.5 rounded-lg bg-background border border-border text-foreground hover:bg-card">3</button>
-          <span class="text-muted">...</span>
-          <button class="px-3 py-1.5 rounded-lg bg-background border border-border text-foreground hover:bg-card">570</button>
-          <button class="p-2 rounded-lg bg-background border border-border text-muted hover:text-foreground transition-colors">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-            </svg>
-          </button>
+        <p class="text-sm text-muted" id="paginationInfo">Showing 0 records</p>
+        <div class="flex items-center gap-2" id="paginationControls">
+          <!-- Pagination controls will be added here -->
         </div>
       </div>
     </div>
   </main>
 
   <script>
-    function exportCSV() {
-      alert('Exporting attendance data to CSV...');
+    const userRole = '<%= user.role %>';
+    let currentData = [];
+
+    // Load classes for filter dropdown
+    async function loadClasses() {
+      if (userRole === 'admin' || userRole === 'teacher') {
+        try {
+          const response = await fetch('/reports/api/reports/classes');
+          const classes = await response.json();
+          const classFilter = document.getElementById('classFilter');
+          classes.forEach(cls => {
+            const option = document.createElement('option');
+            option.value = cls._id;
+            option.textContent = `${cls.name} - Semester ${cls.semester} - Section ${cls.section}`;
+            classFilter.appendChild(option);
+          });
+        } catch (error) {
+          console.error('Error loading classes:', error);
+        }
+      }
     }
-    function exportExcel() {
-      alert('Exporting attendance data to Excel...');
+
+    // Load reports data based on role
+    async function loadReportsData() {
+      try {
+        const params = new URLSearchParams(getFilters());
+        let endpoint = '';
+        
+        if (userRole === 'admin') {
+          endpoint = '/reports/api/reports/admin-data';
+        } else if (userRole === 'teacher') {
+          endpoint = '/reports/api/reports/teacher-data';
+        } else if (userRole === 'student') {
+          endpoint = '/reports/api/reports/student-data';
+        }
+        
+        const response = await fetch(`${endpoint}?${params}`);
+        const data = await response.json();
+        
+        currentData = data.records;
+        updateSummaryStats(data.summary);
+        renderTable(data.records);
+      } catch (error) {
+        document.getElementById('reportTableBody').innerHTML = `
+          <tr>
+            <td colspan="7" class="py-8 text-center text-danger">Error loading reports: ${error.message}</td>
+          </tr>
+        `;
+      }
     }
+
+    // Get filter values
+    function getFilters() {
+      const filters = {};
+      
+      const dateFrom = document.getElementById('dateFrom').value;
+      const dateTo = document.getElementById('dateTo').value;
+      const status = document.getElementById('statusFilter').value;
+      
+      if (dateFrom) filters.dateFrom = dateFrom;
+      if (dateTo) filters.dateTo = dateTo;
+      if (status) filters.status = status;
+      
+      if (userRole === 'admin' || userRole === 'teacher') {
+        const classId = document.getElementById('classFilter').value;
+        const search = document.getElementById('searchInput').value;
+        
+        if (classId) filters.classId = classId;
+        if (search) filters.search = search;
+      }
+      
+      return filters;
+    }
+
+    // Update summary stats
+    function updateSummaryStats(summary) {
+      document.getElementById('totalRecords').textContent = summary.totalRecords.toLocaleString();
+      document.getElementById('avgAttendance').textContent = summary.avgAttendance + '%';
+      document.getElementById('lateEntries').textContent = summary.lateCount.toLocaleString();
+      document.getElementById('absences').textContent = summary.absentCount.toLocaleString();
+    }
+
+    // Render table with records
+    function renderTable(records) {
+      const tbody = document.getElementById('reportTableBody');
+      
+      if (records.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" class="py-8 text-center text-muted">No records found</td>
+          </tr>
+        `;
+        document.getElementById('paginationInfo').textContent = 'Showing 0 records';
+        return;
+      }
+      
+      tbody.innerHTML = records.map(record => {
+        const date = new Date(record.sessionDate);
+        const time = new Date(record.timestamp);
+        const statusColors = {
+          present: 'bg-primary/10 text-primary',
+          late: 'bg-warning/10 text-warning',
+          absent: 'bg-danger/10 text-danger'
+        };
+        
+        let studentCell = '';
+        let idCell = '';
+        
+        if (userRole === 'admin' || userRole === 'teacher') {
+          const initials = record.studentRef?.fullName?.split(' ').map(n => n[0]).join('') || '?';
+          studentCell = `
+            <td class="py-4 px-6">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary text-xs font-semibold">${initials}</div>
+                <span class="text-sm text-foreground">${record.studentRef?.fullName || 'Unknown'}</span>
+              </div>
+            </td>
+          `;
+          idCell = `<td class="py-4 px-6 text-sm text-muted">${record.studentRef?.rollNo || 'N/A'}</td>`;
+        }
+        
+        return `
+          <tr class="hover:bg-background/50 transition-colors">
+            ${studentCell}
+            ${idCell}
+            <td class="py-4 px-6 text-sm text-foreground">${record.classRef?.name || 'N/A'}</td>
+            <td class="py-4 px-6 text-sm text-foreground">${record.courseRef?.name || 'N/A'}</td>
+            <td class="py-4 px-6 text-sm text-foreground">${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
+            <td class="py-4 px-6 text-sm text-foreground">${time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</td>
+            <td class="py-4 px-6">
+              <span class="px-2.5 py-1 text-xs font-medium rounded-full ${statusColors[record.status]}">${record.status.charAt(0).toUpperCase() + record.status.slice(1)}</span>
+            </td>
+          </tr>
+        `;
+      }).join('');
+      
+      document.getElementById('paginationInfo').textContent = `Showing ${records.length} record${records.length !== 1 ? 's' : ''}`;
+    }
+
+    // Apply filters
     function applyFilters() {
-      alert('Filters applied! Data refreshed.');
+      loadReportsData();
     }
+
+    // Export to CSV
+    function exportCSV() {
+      if (currentData.length === 0) {
+        alert('No data to export');
+        return;
+      }
+      
+      let csvContent = '';
+      
+      // Headers
+      if (userRole === 'admin' || userRole === 'teacher') {
+        csvContent = 'Student Name,Student ID,Class,Course,Date,Time,Status\n';
+        currentData.forEach(record => {
+          const date = new Date(record.sessionDate);
+          const time = new Date(record.timestamp);
+          csvContent += `"${record.studentRef?.fullName || 'Unknown'}","${record.studentRef?.rollNo || 'N/A'}","${record.classRef?.name || 'N/A'}","${record.courseRef?.name || 'N/A'}","${date.toLocaleDateString()}","${time.toLocaleTimeString()}","${record.status}"\n`;
+        });
+      } else {
+        csvContent = 'Class,Course,Date,Time,Status\n';
+        currentData.forEach(record => {
+          const date = new Date(record.sessionDate);
+          const time = new Date(record.timestamp);
+          csvContent += `"${record.classRef?.name || 'N/A'}","${record.courseRef?.name || 'N/A'}","${date.toLocaleDateString()}","${time.toLocaleTimeString()}","${record.status}"\n`;
+        });
+      }
+      
+      const blob = new Blob([csvContent], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `attendance_report_${new Date().toISOString().split('T')[0]}.csv`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+    }
+
+    // Export to Excel (using CSV format with .xls extension)
+    function exportExcel() {
+      if (currentData.length === 0) {
+        alert('No data to export');
+        return;
+      }
+      
+      let csvContent = '';
+      
+      if (userRole === 'admin' || userRole === 'teacher') {
+        csvContent = 'Student Name\tStudent ID\tClass\tCourse\tDate\tTime\tStatus\n';
+        currentData.forEach(record => {
+          const date = new Date(record.sessionDate);
+          const time = new Date(record.timestamp);
+          csvContent += `${record.studentRef?.fullName || 'Unknown'}\t${record.studentRef?.rollNo || 'N/A'}\t${record.classRef?.name || 'N/A'}\t${record.courseRef?.name || 'N/A'}\t${date.toLocaleDateString()}\t${time.toLocaleTimeString()}\t${record.status}\n`;
+        });
+      } else {
+        csvContent = 'Class\tCourse\tDate\tTime\tStatus\n';
+        currentData.forEach(record => {
+          const date = new Date(record.sessionDate);
+          const time = new Date(record.timestamp);
+          csvContent += `${record.classRef?.name || 'N/A'}\t${record.courseRef?.name || 'N/A'}\t${date.toLocaleDateString()}\t${time.toLocaleTimeString()}\t${record.status}\n`;
+        });
+      }
+      
+      const blob = new Blob([csvContent], { type: 'application/vnd.ms-excel' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `attendance_report_${new Date().toISOString().split('T')[0]}.xls`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+    }
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', () => {
+      loadClasses();
+      loadReportsData();
+    });
   </script>
 </body>
 </html>
