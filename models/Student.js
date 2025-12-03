@@ -51,4 +51,9 @@ const studentSchema = new mongoose.Schema({
   }
 });
 
+// Indexes for performance
+studentSchema.index({ classRef: 1, isEnrolled: 1 }); // For counting enrolled students per class
+studentSchema.index({ username: 1 }); // Already unique but explicit for login
+studentSchema.index({ rollNo: 1 }); // Already unique but explicit
+
 module.exports = mongoose.model('Student', studentSchema);

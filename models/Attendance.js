@@ -45,5 +45,7 @@ const attendanceSchema = new mongoose.Schema({
 attendanceSchema.index({ studentRef: 1, sessionDate: 1 });
 attendanceSchema.index({ courseRef: 1, sessionDate: 1 });
 attendanceSchema.index({ classRef: 1, sessionDate: 1 });
+attendanceSchema.index({ studentRef: 1, courseRef: 1, sessionDate: 1 }); // Compound for mark-attendance check
+attendanceSchema.index({ timestamp: -1 }); // For sorting recent activity
 
 module.exports = mongoose.model('Attendance', attendanceSchema);

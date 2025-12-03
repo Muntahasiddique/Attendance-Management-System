@@ -273,6 +273,8 @@
           const ipImg = document.getElementById('ipCameraElement');
           const cameraOffDiv = document.getElementById('cameraOff');
           
+          console.log('Camera settings:', cameraSettings);
+          
           if (cameraSettings.cameraType === 'ip' && cameraSettings.streamUrl) {
             // Use IP camera via MJPEG HTTP stream (simple like Python cv2)
             isUsingIPCamera = true;
@@ -282,18 +284,65 @@
             ipImg.style.display = 'block';
             ipImg.src = '/api/camera/stream';
             
+            // Add error handler for IP camera
+            ipImg.onerror = () => {
+              console.error('Failed to load IP camera stream');
+              stopRecognition();
+            };
+            
+            ipImg.onload = () => {
+              console.log('IP camera loaded:', ipImg.naturalWidth, 'x', ipImg.naturalHeight);
+            };
+            
             cameraOffDiv.style.display = 'none';
             
             console.log('IP camera connected via MJPEG stream');
           } else {
             // Use built-in webcam
             isUsingIPCamera = false;
-            stream = await navigator.mediaDevices.getUserMedia({ video: { width: 1280, height: 720 } });
-            video.srcObject = stream;
-            video.style.display = 'block';
-            ipImg.style.display = 'none';
             
-            cameraOffDiv.style.display = 'none';
+            try {
+              stream = await navigator.mediaDevices.getUserMedia({ 
+                video: { 
+                  width: { ideal: 1280 }, 
+                  height: { ideal: 720 },
+                  facingMode: 'user'
+                } 
+              });
+              
+              console.log('Webcam stream obtained');
+              
+              video.srcObject = stream;
+              video.style.display = 'block';
+              ipImg.style.display = 'none';
+              
+              // Wait for video metadata to load
+              await new Promise((resolve, reject) => {
+                const timeout = setTimeout(() => {
+                  reject(new Error('Video loading timeout'));
+                }, 5000);
+                
+                video.onloadedmetadata = () => {
+                  clearTimeout(timeout);
+                  console.log('Video metadata loaded');
+                  video.play()
+                    .then(() => {
+                      console.log('Video playing');
+                      resolve();
+                    })
+                    .catch(err => {
+                      console.error('Error playing video:', err);
+                      reject(err);
+                    });
+                };
+              });
+              
+              cameraOffDiv.style.display = 'none';
+              console.log('Webcam started:', video.videoWidth, 'x', video.videoHeight);
+            } catch (err) {
+              console.error('Webcam error:', err);
+              throw new Error('Failed to access webcam: ' + err.message);
+            }
           }
           
           await Promise.all([
@@ -434,7 +483,7 @@
           }
         });
         
-        setTimeout(detectFaces, 100);
+        setTimeout(detectFaces, 200);
       };
       
       detectFaces();

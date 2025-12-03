@@ -36,6 +36,7 @@ router.get('/api/reports/admin-data', isAuthenticated, hasRole('admin'), async (
       .populate('classRef', 'name')
       .populate('courseRef', 'name')
       .sort({ sessionDate: -1, timestamp: -1 })
+      .limit(1000) // Limit for performance
       .lean();
     
     // Search filter (after population)

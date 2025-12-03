@@ -34,4 +34,9 @@ const courseSchema = new mongoose.Schema({
   }
 });
 
+// Indexes for performance
+courseSchema.index({ classRef: 1 }); // For finding courses by class
+courseSchema.index({ instructorRef: 1 }); // For finding courses by teacher
+courseSchema.index({ code: 1 }); // Already unique but explicit
+
 module.exports = mongoose.model('Course', courseSchema);

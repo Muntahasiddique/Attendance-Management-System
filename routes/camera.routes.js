@@ -95,14 +95,14 @@ router.get('/api/camera/stream', async (req, res) => {
     
     const ffmpegPath = getFFmpegPath();
     
-    // Convert RTSP to MJPEG stream
+    // Convert RTSP to MJPEG stream with optimized settings
     const ffmpeg = spawn(ffmpegPath, [
       '-rtsp_transport', 'tcp',
       '-i', settings.ipCameraUrl,
       '-f', 'mjpeg',
-      '-q:v', '5',
-      '-r', '15',
-      '-s', '1280x720',
+      '-q:v', '8', // Quality (2-31, lower is better)
+      '-r', '10', // 10 fps
+      '-vf', 'scale=1280:720', // Use video filter for scaling
       '-'
     ]);
     

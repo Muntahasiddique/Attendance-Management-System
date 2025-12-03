@@ -84,7 +84,7 @@ router.post('/api/mark-attendance', isAuthenticated, hasRole('admin', 'teacher')
       studentRef: studentId,
       courseRef: courseId,
       sessionDate: sessionDate
-    });
+    }).lean();
     
     if (existingAttendance) {
       return res.status(400).json({ 
@@ -151,6 +151,7 @@ router.get('/api/today-attendance/:courseId', isAuthenticated, hasRole('admin', 
     })
     .populate('studentRef', 'fullName rollNo')
     .sort({ timestamp: -1 })
+    .limit(100)
     .lean();
     
     // Filter out records with null studentRef and transform the data
