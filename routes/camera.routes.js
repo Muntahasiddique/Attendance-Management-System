@@ -95,14 +95,14 @@ router.get('/api/camera/stream', async (req, res) => {
     
     const ffmpegPath = getFFmpegPath();
     
-    // Convert RTSP to MJPEG stream with optimized settings
+    // Convert RTSP to MJPEG stream with MJPEG-compatible settings
     const ffmpeg = spawn(ffmpegPath, [
       '-rtsp_transport', 'tcp',
       '-i', settings.ipCameraUrl,
       '-f', 'mjpeg',
-      '-q:v', '8', // Quality (2-31, lower is better)
+      '-q:v', '5', // Quality (2-31, lower is better)
       '-r', '10', // 10 fps
-      '-vf', 'scale=1280:720', // Use video filter for scaling
+      '-vf', 'scale=1280:720',
       '-'
     ]);
     
@@ -188,70 +188,80 @@ router.post('/api/camera/test', async (req, res) => {
       // Test RTSP connection with ffmpeg
       const ffmpegPath = getFFmpegPath();
       
-      return new Promise((resolve) => {
-        const timeout = setTimeout(() => {
-          if (testProcess) {
-            testProcess.kill();
-          }
-          resolve(res.json({ 
-            success: false, 
-            message: 'Connection timeout - camera not responding' 
-          }));
-        }, 10000); // 10 second timeout
-        
-        const testProcess = spawn(ffmpegPath, [
-          '-rtsp_transport', 'tcp',
-          '-i', ipCameraUrl,
-          '-frames:v', '1',
-          '-f', 'null',
-          '-'
-        ]);
-        
-        let errorOutput = '';
-        
-        testProcess.stderr.on('data', (data) => {
-          errorOutput += data.toString();
+      let testProcess;
+      let responseHandled = false;
+      
+      const sendResponse = (data) => {
+        if (!responseHandled) {
+          responseHandled = true;
+          res.json(data);
+        }
+      };
+      
+      const timeout = setTimeout(() => {
+        if (testProcess) {
+          testProcess.kill();
+        }
+        sendResponse({ 
+          success: false, 
+          message: 'Connection timeout - camera not responding' 
         });
+      }, 10000); // 10 second timeout
+      
+      testProcess = spawn(ffmpegPath, [
+        '-rtsp_transport', 'tcp',
+        '-i', ipCameraUrl,
+        '-frames:v', '1',
+        '-f', 'null',
+        '-'
+      ]);
+      
+      let errorOutput = '';
+      
+      testProcess.stderr.on('data', (data) => {
+        errorOutput += data.toString();
+      });
+      
+      testProcess.on('close', (code) => {
+        clearTimeout(timeout);
         
-        testProcess.on('close', (code) => {
-          clearTimeout(timeout);
-          
-          if (code === 0 || errorOutput.includes('Stream #0:0') || errorOutput.includes('Input #0')) {
-            resolve(res.json({ 
-              success: true, 
-              message: 'Camera connection successful!' 
-            }));
-          } else if (errorOutput.includes('Connection refused') || errorOutput.includes('Connection timed out')) {
-            resolve(res.json({ 
-              success: false, 
-              message: 'Connection failed - check IP address and port' 
-            }));
-          } else if (errorOutput.includes('401 Unauthorized') || errorOutput.includes('403 Forbidden')) {
-            resolve(res.json({ 
-              success: false, 
-              message: 'Authentication failed - check username and password' 
-            }));
-          } else if (errorOutput.includes('404 Not Found')) {
-            resolve(res.json({ 
-              success: false, 
-              message: 'Stream path not found - check RTSP URL path' 
-            }));
-          } else {
-            resolve(res.json({ 
-              success: false, 
-              message: 'Connection failed - invalid URL or camera offline' 
-            }));
-          }
-        });
-        
-        testProcess.on('error', (err) => {
-          clearTimeout(timeout);
-          resolve(res.json({ 
+        if (code === 0 || errorOutput.includes('Stream #0:0') || errorOutput.includes('Input #0')) {
+          sendResponse({ 
+            success: true, 
+            message: 'Camera connection successful!' 
+          });
+        } else if (errorOutput.includes('Connection refused') || errorOutput.includes('Connection timed out')) {
+          sendResponse({ 
             success: false, 
-            message: `Error: ${err.message}` 
-          }));
+            message: 'Connection failed - check IP address and port' 
+          });
+        } else if (errorOutput.includes('401 Unauthorized') || errorOutput.includes('403 Forbidden')) {
+          sendResponse({ 
+            success: false, 
+            message: 'Authentication failed - check username and password' 
+          });
+        } else if (errorOutput.includes('404 Not Found')) {
+          sendResponse({ 
+            success: false, 
+            message: 'Stream path not found - check RTSP URL path' 
+          });
+        } else {
+          sendResponse({ 
+            success: false, 
+            message: 'Connection failed - invalid URL or camera offline' 
+          });
+        }
+      });
+      
+      testProcess.on('error', (err) => {
+        clearTimeout(timeout);
+        sendResponse({ 
+          success: false, 
+          message: `Error: ${err.message}` 
         });
       });
+      
+      return; // Prevent fall-through
     }
     
     res.json({ success: false, message: 'Unknown camera type' });
