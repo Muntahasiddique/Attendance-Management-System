@@ -45,9 +45,9 @@ const settingsSchema = new mongoose.Schema({
   // AI Recognition Settings
   matchingThreshold: {
     type: Number,
-    default: 0.75,
-    min: 0.5,
-    max: 0.95
+    default: 0.5,
+    min: 0.3,
+    max: 0.7
   },
   detectionModel: {
     type: String,

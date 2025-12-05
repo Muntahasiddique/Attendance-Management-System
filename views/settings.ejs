@@ -122,16 +122,16 @@
         <div class="space-y-5">
           <div>
             <div class="flex items-center justify-between mb-2">
-              <label class="text-sm font-medium text-foreground">Matching Threshold</label>
-              <span class="text-sm text-primary font-mono" id="thresholdValue">0.75</span>
+              <label class="text-sm font-medium text-foreground">Matching Threshold (Distance)</label>
+              <span class="text-sm text-primary font-mono" id="thresholdValue">0.50</span>
             </div>
-            <input type="range" min="0.5" max="0.95" step="0.05" value="0.75" id="matchingThreshold" class="w-full h-2 bg-background rounded-lg appearance-none cursor-pointer accent-primary" oninput="updateThreshold(this.value)">
+            <input type="range" min="0.3" max="0.7" step="0.05" value="0.5" id="matchingThreshold" class="w-full h-2 bg-background rounded-lg appearance-none cursor-pointer accent-primary" oninput="updateThreshold(this.value)">
             <div class="flex justify-between text-xs text-muted mt-2">
-              <span>Lenient (0.50)</span>
-              <span>Strict (0.95)</span>
+              <span>Strict (0.30)</span>
+              <span>Lenient (0.70)</span>
             </div>
             <p class="text-xs text-muted mt-3 p-3 bg-background rounded-lg">
-              <strong class="text-foreground">Note:</strong> Higher values require closer face matches but may reject valid users. Lower values are more permissive but may allow false positives.
+              <strong class="text-foreground">Note:</strong> Lower values require closer face matches (stricter, recommended: 0.4-0.5). Higher values are more permissive but may cause false positives.
             </p>
           </div>
 
