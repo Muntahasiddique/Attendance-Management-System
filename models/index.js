@@ -4,5 +4,6 @@ module.exports = {
   Class: require('./Class'),
   Student: require('./Student'),
   Course: require('./Course'),
-  Attendance: require('./Attendance')
+  Attendance: require('./Attendance'),
+  Settings: require('./Settings')
 };

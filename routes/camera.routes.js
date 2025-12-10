@@ -4,9 +4,43 @@ const { spawn } = require('child_process');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
+const multer = require('multer');
 
 let ffmpegProcess = null;
 let streamClients = [];
+
+// Configure multer for video uploads
+const videoStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadDir = path.join(__dirname, '..', 'uploads', 'videos');
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const ext = path.extname(file.originalname);
+    cb(null, `video-${req.session.userId}-${uniqueSuffix}${ext}`);
+  }
+});
+
+const videoUpload = multer({
+  storage: videoStorage,
+  limits: {
+    fileSize: 500 * 1024 * 1024 // 500MB max
+  },
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = ['video/mp4', 'video/avi', 'video/quicktime', 'video/x-matroska', 'video/webm'];
+    const allowedExtensions = /\.(mp4|avi|mov|mkv|webm)$/i;
+    
+    if (allowedTypes.includes(file.mimetype) || allowedExtensions.test(file.originalname)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Invalid file type. Please upload MP4, AVI, MOV, MKV, or WebM'), false);
+    }
+  }
+});
 
 // Find FFmpeg path
 function getFFmpegPath() {
@@ -60,7 +94,8 @@ router.get('/api/camera/stream-url', async (req, res) => {
     res.json({
       cameraType: settings.cameraType || 'webcam',
       streamUrl: settings.cameraType === 'ip' ? '/api/camera/stream' : null,
-      rtspUrl: settings.ipCameraUrl || null
+      rtspUrl: settings.ipCameraUrl || null,
+      videoFilePath: settings.videoFilePath || null
     });
   } catch (error) {
     console.error('Error fetching camera settings:', error);
@@ -273,6 +308,176 @@ router.post('/api/camera/test', async (req, res) => {
       success: false, 
       message: 'Server error during camera test' 
     });
+  }
+});
+
+// Upload video file
+router.post('/api/camera/upload-video', videoUpload.single('video'), async (req, res) => {
+  try {
+    if (!req.session.userId || !req.session.role) {
+      return res.status(401).json({ success: false, message: 'Not authenticated' });
+    }
+    
+    if (!req.file) {
+      return res.status(400).json({ success: false, message: 'No video file uploaded' });
+    }
+    
+    const filePath = req.file.path;
+    
+    // Update user settings with video file path
+    const userModel = req.session.role === 'admin' ? 'Admin' : 'Teacher';
+    await Settings.findOneAndUpdate(
+      { userId: req.session.userId, userModel: userModel },
+      { videoFilePath: filePath },
+      { upsert: true }
+    );
+    
+    res.json({
+      success: true,
+      message: 'Video uploaded successfully',
+      filePath: filePath,
+      fileName: req.file.originalname
+    });
+  } catch (error) {
+    console.error('Video upload error:', error);
+    res.status(500).json({ success: false, message: 'Failed to upload video' });
+  }
+});
+
+// Get video file info for current user
+router.get('/api/camera/video-info', async (req, res) => {
+  try {
+    if (!req.session.userId || !req.session.role) {
+      return res.status(401).json({ success: false, message: 'Not authenticated' });
+    }
+    
+    const userModel = req.session.role === 'admin' ? 'Admin' : 'Teacher';
+    const settings = await Settings.findOne({
+      userId: req.session.userId,
+      userModel: userModel
+    });
+    
+    if (!settings || !settings.videoFilePath) {
+      return res.json({ hasVideo: false });
+    }
+    
+    // Check if file exists
+    if (!fs.existsSync(settings.videoFilePath)) {
+      return res.json({ hasVideo: false });
+    }
+    
+    res.json({
+      hasVideo: true,
+      filePath: settings.videoFilePath,
+      fileName: path.basename(settings.videoFilePath)
+    });
+  } catch (error) {
+    console.error('Video info error:', error);
+    res.status(500).json({ success: false, message: 'Failed to get video info' });
+  }
+});
+
+// Serve video file for playback
+router.get('/api/camera/video-stream', async (req, res) => {
+  try {
+    if (!req.session.userId || !req.session.role) {
+      return res.status(401).send('Not authenticated');
+    }
+    
+    const userModel = req.session.role === 'admin' ? 'Admin' : 'Teacher';
+    const settings = await Settings.findOne({
+      userId: req.session.userId,
+      userModel: userModel
+    });
+    
+    if (!settings || !settings.videoFilePath) {
+      return res.status(404).send('No video file configured');
+    }
+    
+    const videoPath = settings.videoFilePath;
+    
+    if (!fs.existsSync(videoPath)) {
+      return res.status(404).send('Video file not found');
+    }
+    
+    const stat = fs.statSync(videoPath);
+    const fileSize = stat.size;
+    const range = req.headers.range;
+    
+    // Support range requests for video seeking
+    if (range) {
+      const parts = range.replace(/bytes=/, '').split('-');
+      const start = parseInt(parts[0], 10);
+      const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+      const chunkSize = (end - start) + 1;
+      
+      const file = fs.createReadStream(videoPath, { start, end });
+      const ext = path.extname(videoPath).toLowerCase();
+      const mimeTypes = {
+        '.mp4': 'video/mp4',
+        '.webm': 'video/webm',
+        '.avi': 'video/avi',
+        '.mov': 'video/quicktime',
+        '.mkv': 'video/x-matroska'
+      };
+      
+      res.writeHead(206, {
+        'Content-Range': `bytes ${start}-${end}/${fileSize}`,
+        'Accept-Ranges': 'bytes',
+        'Content-Length': chunkSize,
+        'Content-Type': mimeTypes[ext] || 'video/mp4'
+      });
+      
+      file.pipe(res);
+    } else {
+      const ext = path.extname(videoPath).toLowerCase();
+      const mimeTypes = {
+        '.mp4': 'video/mp4',
+        '.webm': 'video/webm',
+        '.avi': 'video/avi',
+        '.mov': 'video/quicktime',
+        '.mkv': 'video/x-matroska'
+      };
+      
+      res.writeHead(200, {
+        'Content-Length': fileSize,
+        'Content-Type': mimeTypes[ext] || 'video/mp4'
+      });
+      
+      fs.createReadStream(videoPath).pipe(res);
+    }
+  } catch (error) {
+    console.error('Video stream error:', error);
+    res.status(500).send('Error streaming video');
+  }
+});
+
+// Delete uploaded video
+router.delete('/api/camera/video', async (req, res) => {
+  try {
+    if (!req.session.userId || !req.session.role) {
+      return res.status(401).json({ success: false, message: 'Not authenticated' });
+    }
+    
+    const userModel = req.session.role === 'admin' ? 'Admin' : 'Teacher';
+    const settings = await Settings.findOne({
+      userId: req.session.userId,
+      userModel: userModel
+    });
+    
+    if (settings && settings.videoFilePath && fs.existsSync(settings.videoFilePath)) {
+      fs.unlinkSync(settings.videoFilePath);
+    }
+    
+    await Settings.findOneAndUpdate(
+      { userId: req.session.userId, userModel: userModel },
+      { videoFilePath: '' }
+    );
+    
+    res.json({ success: true, message: 'Video deleted successfully' });
+  } catch (error) {
+    console.error('Delete video error:', error);
+    res.status(500).json({ success: false, message: 'Failed to delete video' });
   }
 });
 

@@ -16,10 +16,14 @@ const settingsSchema = new mongoose.Schema({
   // Camera Settings
   cameraType: {
     type: String,
-    enum: ['webcam', 'usb', 'ip'],
+    enum: ['webcam', 'usb', 'ip', 'video'],
     default: 'webcam'
   },
   ipCameraUrl: {
+    type: String,
+    default: ''
+  },
+  videoFilePath: {
     type: String,
     default: ''
   },

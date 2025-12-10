@@ -35,6 +35,7 @@
               <option value="webcam">Built-in Webcam (Default)</option>
               <option value="usb">USB Camera</option>
               <option value="ip">IP Camera (RTSP)</option>
+              <option value="video">Pre-recorded Video</option>
             </select>
           </div>
 
@@ -53,7 +54,38 @@
             <p class="text-xs text-muted mt-2">Enter the RTSP URL of your IP camera. This will be used instead of built-in camera.</p>
           </div>
 
-          <button onclick="testCamera()" class="w-full py-3 px-4 bg-background border border-border text-foreground font-medium rounded-lg hover:bg-card transition-all flex items-center justify-center gap-2">
+          <div id="videoFileSection" style="display: none;">
+            <label class="block text-sm font-medium text-foreground mb-2">Upload Video File</label>
+            <div class="border-2 border-dashed border-border rounded-lg p-4 text-center hover:border-primary transition-colors">
+              <input type="file" id="videoFileInput" accept="video/*" class="hidden">
+              <div id="videoUploadArea" onclick="document.getElementById('videoFileInput').click()" class="cursor-pointer">
+                <svg class="w-8 h-8 mx-auto text-muted mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                </svg>
+                <p class="text-sm text-muted">Click to upload or drag and drop</p>
+                <p class="text-xs text-muted mt-1">MP4, AVI, MOV, MKV (max 500MB)</p>
+              </div>
+              <div id="videoFileInfo" class="hidden">
+                <div class="flex items-center justify-between">
+                  <span id="videoFileName" class="text-sm text-foreground truncate"></span>
+                  <button onclick="clearVideoFile()" class="text-destructive hover:text-destructive/80 ml-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div id="uploadProgress" class="hidden mt-2">
+              <div class="w-full bg-background rounded-full h-2">
+                <div id="uploadProgressBar" class="bg-primary h-2 rounded-full transition-all" style="width: 0%"></div>
+              </div>
+              <p id="uploadProgressText" class="text-xs text-muted mt-1">Uploading... 0%</p>
+            </div>
+            <p class="text-xs text-muted mt-2">Upload a video file to use for attendance detection. The video will be processed frame by frame.</p>
+          </div>
+
+          <button onclick="testCamera()" id="testCameraBtn" class="w-full py-3 px-4 bg-background border border-border text-foreground font-medium rounded-lg hover:bg-card transition-all flex items-center justify-center gap-2">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
             </svg>
@@ -192,6 +224,15 @@
         document.getElementById('cameraType').value = settings.cameraType || 'webcam';
         document.getElementById('ipCameraUrl').value = settings.ipCameraUrl || '';
         
+        // Show saved video file info if exists
+        if (settings.videoFilePath) {
+          const fileName = settings.videoFilePath.split(/[\\/]/).pop();
+          document.getElementById('videoUploadArea').classList.add('hidden');
+          document.getElementById('videoFileInfo').classList.remove('hidden');
+          document.getElementById('videoFileName').textContent = fileName;
+          uploadedVideoFile = { serverPath: settings.videoFilePath };
+        }
+        
         document.getElementById('workStartTime').value = settings.workStartTime || '09:00';
         document.getElementById('lateCutoffTime').value = settings.lateCutoffTime || '09:15';
         document.getElementById('workEndTime').value = settings.workEndTime || '17:00';
@@ -216,15 +257,129 @@
     function toggleIpCameraSection() {
       const cameraType = document.getElementById('cameraType').value;
       const ipSection = document.getElementById('ipCameraSection');
+      const videoSection = document.getElementById('videoFileSection');
+      const testBtn = document.getElementById('testCameraBtn');
+      
+      // Hide all sections first
+      ipSection.style.display = 'none';
+      videoSection.style.display = 'none';
       
       if (cameraType === 'ip') {
         ipSection.style.display = 'block';
+        testBtn.style.display = 'flex';
+      } else if (cameraType === 'video') {
+        videoSection.style.display = 'block';
+        testBtn.style.display = 'none';
       } else {
-        ipSection.style.display = 'none';
+        testBtn.style.display = 'flex';
       }
     }
 
     document.getElementById('cameraType').addEventListener('change', toggleIpCameraSection);
+
+    // Video file handling
+    let uploadedVideoFile = null;
+    
+    document.getElementById('videoFileInput').addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      
+      // Validate file size (500MB max)
+      if (file.size > 500 * 1024 * 1024) {
+        showNotification('File too large. Maximum size is 500MB', 'error');
+        return;
+      }
+      
+      // Validate file type
+      const allowedTypes = ['video/mp4', 'video/avi', 'video/quicktime', 'video/x-matroska', 'video/webm'];
+      if (!allowedTypes.includes(file.type) && !file.name.match(/\.(mp4|avi|mov|mkv|webm)$/i)) {
+        showNotification('Invalid file type. Please upload MP4, AVI, MOV, MKV, or WebM', 'error');
+        return;
+      }
+      
+      uploadedVideoFile = file;
+      
+      // Show file info
+      document.getElementById('videoUploadArea').classList.add('hidden');
+      document.getElementById('videoFileInfo').classList.remove('hidden');
+      document.getElementById('videoFileName').textContent = file.name;
+      
+      // Upload the file
+      await uploadVideoFile(file);
+    });
+    
+    async function clearVideoFile() {
+      // Delete from server if there's an uploaded file
+      if (uploadedVideoFile?.serverPath || currentSettings?.videoFilePath) {
+        try {
+          const response = await fetch('/api/camera/video', { method: 'DELETE' });
+          const result = await response.json();
+          if (result.success) {
+            showNotification('Video removed successfully', 'success');
+          }
+        } catch (error) {
+          console.error('Error deleting video:', error);
+        }
+      }
+      
+      uploadedVideoFile = null;
+      if (currentSettings) {
+        currentSettings.videoFilePath = '';
+      }
+      document.getElementById('videoFileInput').value = '';
+      document.getElementById('videoUploadArea').classList.remove('hidden');
+      document.getElementById('videoFileInfo').classList.add('hidden');
+      document.getElementById('uploadProgress').classList.add('hidden');
+    }
+    
+    async function uploadVideoFile(file) {
+      const formData = new FormData();
+      formData.append('video', file);
+      
+      document.getElementById('uploadProgress').classList.remove('hidden');
+      
+      try {
+        const xhr = new XMLHttpRequest();
+        
+        xhr.upload.addEventListener('progress', (e) => {
+          if (e.lengthComputable) {
+            const percent = Math.round((e.loaded / e.total) * 100);
+            document.getElementById('uploadProgressBar').style.width = percent + '%';
+            document.getElementById('uploadProgressText').textContent = `Uploading... ${percent}%`;
+          }
+        });
+        
+        xhr.addEventListener('load', () => {
+          if (xhr.status === 200) {
+            const result = JSON.parse(xhr.responseText);
+            if (result.success) {
+              showNotification('Video uploaded successfully!', 'success');
+              document.getElementById('uploadProgressText').textContent = 'Upload complete!';
+              // Store the video path for saving
+              uploadedVideoFile.serverPath = result.filePath;
+            } else {
+              showNotification(result.message || 'Upload failed', 'error');
+              clearVideoFile();
+            }
+          } else {
+            showNotification('Upload failed', 'error');
+            clearVideoFile();
+          }
+        });
+        
+        xhr.addEventListener('error', () => {
+          showNotification('Upload failed', 'error');
+          clearVideoFile();
+        });
+        
+        xhr.open('POST', '/api/camera/upload-video');
+        xhr.send(formData);
+      } catch (error) {
+        console.error('Error uploading video:', error);
+        showNotification('Failed to upload video', 'error');
+        clearVideoFile();
+      }
+    }
 
     async function testCamera() {
       const cameraType = document.getElementById('cameraType').value;
@@ -267,6 +422,7 @@
         const settings = {
           cameraType: document.getElementById('cameraType').value,
           ipCameraUrl: document.getElementById('ipCameraUrl').value,
+          videoFilePath: uploadedVideoFile?.serverPath || currentSettings?.videoFilePath || '',
           
           workStartTime: document.getElementById('workStartTime').value,
           lateCutoffTime: document.getElementById('lateCutoffTime').value,
