@@ -631,7 +631,8 @@
           ctx.fillText(label, box.x + 5, box.y - 7);
           
           if (isMatch && !isMarked) {
-            markAttendance(bestMatch.label, 1 - bestMatch.distance);
+            // Pass the face descriptor for incremental learning
+            markAttendance(bestMatch.label, 1 - bestMatch.distance, Array.from(detection.descriptor));
           }
         });
         
@@ -641,7 +642,7 @@
       detectFaces();
     }
 
-    async function markAttendance(studentId, confidenceScore) {
+    async function markAttendance(studentId, confidenceScore, faceDescriptor = null) {
       if (!studentId || !selectedCourseId || !selectedClassId) {
         console.error('Missing required data for attendance marking');
         return;
@@ -657,7 +658,8 @@
             studentId: studentId.toString(), 
             courseId: selectedCourseId, 
             classId: selectedClassId, 
-            confidenceScore 
+            confidenceScore,
+            faceDescriptor // Send descriptor for incremental learning
           })
         });
         

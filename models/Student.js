@@ -37,6 +37,14 @@ const studentSchema = new mongoose.Schema({
     type: [Number], // Single averaged 128-dimensional face descriptor
     default: []
   },
+  lastDescriptorUpdate: {
+    type: Date,
+    default: null // Tracks when descriptor was last updated via incremental learning
+  },
+  descriptorUpdateCount: {
+    type: Number,
+    default: 0 // Tracks how many times descriptor has been refined
+  },
   attendanceRecords: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Attendance'

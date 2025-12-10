@@ -67,7 +67,7 @@ router.get('/api/class-students/:classId', isAuthenticated, hasRole('admin', 'te
 // Mark attendance
 router.post('/api/mark-attendance', isAuthenticated, hasRole('admin', 'teacher'), async (req, res) => {
   try {
-    const { studentId, courseId, classId, confidenceScore } = req.body;
+    const { studentId, courseId, classId, confidenceScore, faceDescriptor } = req.body;
     
     if (!studentId || !courseId || !classId) {
       return res.status(400).json({ 
@@ -123,10 +123,38 @@ router.post('/api/mark-attendance', isAuthenticated, hasRole('admin', 'teacher')
     });
     
     // Get student info for response
-    const student = await Student.findById(studentId).select('fullName rollNo').lean();
+    const student = await Student.findById(studentId).select('fullName rollNo faceDescriptor').lean();
     
     if (!student) {
       return res.status(404).json({ error: 'Student not found' });
+    }
+    
+    // Update face descriptor using exponential moving average (incremental learning)
+    // Only update if we have a new descriptor and confidence is high enough
+    if (faceDescriptor && Array.isArray(faceDescriptor) && faceDescriptor.length === 128 && confidenceScore >= 0.6) {
+      const existingDescriptor = student.faceDescriptor;
+      
+      if (existingDescriptor && existingDescriptor.length === 128) {
+        // Blend old and new descriptor using exponential moving average
+        // Alpha controls how much weight new detection gets (0.1 = 10% new, 90% old)
+        // Lower alpha = more stable, higher alpha = faster adaptation
+        const alpha = 0.15;
+        
+        const updatedDescriptor = existingDescriptor.map((oldVal, i) => {
+          return oldVal * (1 - alpha) + faceDescriptor[i] * alpha;
+        });
+        
+        // Normalize the descriptor to unit length
+        const magnitude = Math.sqrt(updatedDescriptor.reduce((sum, val) => sum + val * val, 0));
+        const normalizedDescriptor = updatedDescriptor.map(val => val / magnitude);
+        
+        // Update student's face descriptor
+        await Student.findByIdAndUpdate(studentId, {
+          faceDescriptor: normalizedDescriptor,
+          lastDescriptorUpdate: new Date(),
+          $inc: { descriptorUpdateCount: 1 }
+        });
+      }
     }
     
     res.json({
@@ -134,7 +162,7 @@ router.post('/api/mark-attendance', isAuthenticated, hasRole('admin', 'teacher')
       attendance: {
         ...attendance.toObject(),
         studentRef: studentId,
-        student: student
+        student: { fullName: student.fullName, rollNo: student.rollNo }
       },
       status: status
     });
