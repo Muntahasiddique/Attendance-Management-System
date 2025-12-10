@@ -378,11 +378,11 @@
                     ${course.sessions.length === 0 ? `
                       <p class="text-sm text-muted text-center py-4">No sessions recorded yet</p>
                     ` : course.sessions.slice(0, 5).map(session => `
-                      <div onclick="openSessionModal('${course._id}', '${course.name.replace(/'/g, "\\'")}', '${cls.name.replace(/'/g, "\\'")}')" class="flex items-center justify-between p-3 bg-card rounded-lg cursor-pointer hover:bg-card/80 transition-all">
+                      <div onclick="openSessionModal('${course._id}', '${course.name.replace(/'/g, "\\'")}', '${cls.name.replace(/'/g, "\\'")}'${session.date ? `, '${session.date}'` : ''})" class="flex items-center justify-between p-3 bg-card rounded-lg cursor-pointer hover:bg-card/80 transition-all">
                         <div class="flex items-center gap-3">
                           <div class="w-2 h-2 rounded-full ${session.attendanceRate >= 75 ? 'bg-primary' : session.attendanceRate >= 50 ? 'bg-warning' : 'bg-danger'}"></div>
                           <div>
-                            <p class="text-sm font-medium text-foreground">${new Date(session.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</p>
+                            <p class="text-sm font-medium text-foreground">${formatSessionDate(session.date)}</p>
                             <p class="text-xs text-muted">${session.presentCount}/${session.totalCount} present</p>
                           </div>
                         </div>
@@ -429,14 +429,18 @@
       }
     }
 
-    async function openSessionModal(courseId, courseName, className) {
+    async function openSessionModal(courseId, courseName, className, sessionDate = null) {
       document.getElementById('sessionModal').classList.remove('hidden');
       document.getElementById('modalTitle').textContent = courseName;
-      document.getElementById('modalSubtitle').textContent = className;
+      document.getElementById('modalSubtitle').textContent = sessionDate ? `${className} - ${formatSessionDate(sessionDate)}` : className;
       document.getElementById('sessionTableBody').innerHTML = '<tr><td colspan="5" class="py-8 text-center text-muted">Loading...</td></tr>';
       
       try {
-        const response = await fetch(`/reports/api/reports/course-sessions/${courseId}`);
+        let url = `/reports/api/reports/course-sessions/${courseId}`;
+        if (sessionDate) {
+          url += `?sessionDate=${sessionDate}`;
+        }
+        const response = await fetch(url);
         const data = await response.json();
         
         currentSessionData = data.records;
@@ -486,6 +490,21 @@
       renderSessionTable();
     }
 
+    // Helper function to format date correctly (sessionDate is stored as local midnight)
+    function formatSessionDate(dateStr) {
+      // Parse as local date to avoid timezone shift
+      const date = new Date(dateStr + 'T12:00:00');
+      const options = { weekday: 'short', month: 'short', day: 'numeric' };
+      return date.toLocaleDateString('en-US', options);
+    }
+    
+    function formatSessionDateLong(dateStr) {
+      // Parse as local date to avoid timezone shift  
+      const date = new Date(dateStr + 'T12:00:00');
+      const options = { month: 'short', day: 'numeric', year: 'numeric' };
+      return date.toLocaleDateString('en-US', options);
+    }
+
     function renderSessionTable() {
       const tbody = document.getElementById('sessionTableBody');
       const statusColors = {
@@ -501,7 +520,7 @@
           <tr class="hover:bg-background/50">
             <td class="py-3 px-4 text-sm text-foreground">${record.studentRef?.fullName || 'Unknown'}</td>
             <td class="py-3 px-4 text-sm text-muted">${record.studentRef?.rollNo || 'N/A'}</td>
-            <td class="py-3 px-4 text-sm text-foreground">${new Date(record.sessionDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
+            <td class="py-3 px-4 text-sm text-foreground">${new Date(record.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</td>
             <td class="py-3 px-4 text-sm text-foreground">${new Date(record.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</td>
             <td class="py-3 px-4">
               <span class="px-2 py-1 text-xs font-medium rounded-full ${statusColors[record.status]}">${record.status.charAt(0).toUpperCase() + record.status.slice(1)}</span>
@@ -635,7 +654,7 @@
       container.innerHTML = sessions.map(session => `
         <div class="flex items-center justify-between p-4 rounded-lg border ${statusColors[session.status]}">
           <div>
-            <p class="font-medium text-foreground">${new Date(session.date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}</p>
+            <p class="font-medium text-foreground">${new Date(session.date + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}</p>
             <p class="text-sm text-muted">Check-in: ${new Date(session.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</p>
           </div>
           <span class="px-3 py-1 text-sm font-medium rounded-full ${statusColors[session.status].split(' ').slice(0, 2).join(' ')}">${session.status.charAt(0).toUpperCase() + session.status.slice(1)}</span>

@@ -259,10 +259,12 @@ router.get('/api/reports/admin-hierarchy', isAuthenticated, hasRole('admin'), as
         // Get attendance records for this course
         const attendance = await Attendance.find({ courseRef: course._id }).lean();
         
-        // Group by session date
+        // Group by timestamp date (actual attendance marking time)
         const sessionMap = new Map();
         attendance.forEach(record => {
-          const dateKey = new Date(record.sessionDate).toISOString().split('T')[0];
+          // Use timestamp for accurate date
+          const d = new Date(record.timestamp);
+          const dateKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
           if (!sessionMap.has(dateKey)) {
             sessionMap.set(dateKey, { present: 0, late: 0, absent: 0, total: 0 });
           }
@@ -342,10 +344,12 @@ router.get('/api/reports/teacher-hierarchy', isAuthenticated, hasRole('teacher')
       // Get attendance for this course
       const attendance = await Attendance.find({ courseRef: course._id }).lean();
       
-      // Group by session date
+      // Group by timestamp date (actual attendance marking time)
       const sessionMap = new Map();
       attendance.forEach(record => {
-        const dateKey = new Date(record.sessionDate).toISOString().split('T')[0];
+        // Use timestamp for accurate date
+        const d = new Date(record.timestamp);
+        const dateKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
         if (!sessionMap.has(dateKey)) {
           sessionMap.set(dateKey, { present: 0, late: 0, absent: 0, total: 0 });
         }
@@ -388,10 +392,26 @@ router.get('/api/reports/teacher-hierarchy', isAuthenticated, hasRole('teacher')
 router.get('/api/reports/course-sessions/:courseId', isAuthenticated, hasRole('admin', 'teacher'), async (req, res) => {
   try {
     const { courseId } = req.params;
+    const { sessionDate } = req.query;
     
-    const records = await Attendance.find({ courseRef: courseId })
+    let query = { courseRef: courseId };
+    
+    // If sessionDate is provided, filter by that specific date using timestamp
+    if (sessionDate) {
+      // Parse the date and create local midnight boundaries
+      const [year, month, day] = sessionDate.split('-').map(Number);
+      const startOfDay = new Date(year, month - 1, day, 0, 0, 0, 0);
+      const endOfDay = new Date(year, month - 1, day, 23, 59, 59, 999);
+      
+      query.timestamp = {
+        $gte: startOfDay,
+        $lte: endOfDay
+      };
+    }
+    
+    const records = await Attendance.find(query)
       .populate('studentRef', 'fullName rollNo')
-      .sort({ sessionDate: -1, timestamp: -1 })
+      .sort({ timestamp: -1 })
       .lean();
     
     res.json({ records });
