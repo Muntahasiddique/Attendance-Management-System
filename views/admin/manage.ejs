@@ -61,36 +61,124 @@
     </div>
 
     <!-- Overview Tables -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="space-y-4">
       <!-- Teachers List -->
-      <div class="bg-card border border-border rounded-xl p-6">
-        <h3 class="font-semibold text-foreground mb-4">Teachers</h3>
-        <div class="space-y-3" id="teachersList">
-          <p class="text-sm text-muted">No teachers added yet</p>
+      <div class="bg-card border border-border rounded-xl overflow-hidden">
+        <button onclick="toggleSection('teachers')" class="w-full p-6 flex items-center justify-between hover:bg-background/50 transition-all">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center">
+              <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+              </svg>
+            </div>
+            <div class="text-left">
+              <h3 class="font-semibold text-foreground">Teachers</h3>
+              <p class="text-sm text-muted" id="teachersCount">0 teachers</p>
+            </div>
+          </div>
+          <svg id="teachersChevron" class="w-5 h-5 text-muted transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </button>
+        <div id="teachersSection" class="hidden border-t border-border">
+          <div class="p-4 space-y-2" id="teachersList">
+            <p class="text-sm text-muted text-center py-4">No teachers added yet</p>
+          </div>
+          <div id="teachersShowMore" class="hidden border-t border-border p-3 text-center">
+            <button onclick="showMore('teachers')" class="text-sm text-primary hover:text-primary/80 font-medium">
+              Show more
+            </button>
+          </div>
         </div>
       </div>
 
       <!-- Classes List -->
-      <div class="bg-card border border-border rounded-xl p-6">
-        <h3 class="font-semibold text-foreground mb-4">Classes</h3>
-        <div class="space-y-3" id="classesList">
-          <p class="text-sm text-muted">No classes created yet</p>
+      <div class="bg-card border border-border rounded-xl overflow-hidden">
+        <button onclick="toggleSection('classes')" class="w-full p-6 flex items-center justify-between hover:bg-background/50 transition-all">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center">
+              <svg class="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+              </svg>
+            </div>
+            <div class="text-left">
+              <h3 class="font-semibold text-foreground">Classes</h3>
+              <p class="text-sm text-muted" id="classesCount">0 classes</p>
+            </div>
+          </div>
+          <svg id="classesChevron" class="w-5 h-5 text-muted transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </button>
+        <div id="classesSection" class="hidden border-t border-border">
+          <div class="p-4 space-y-2" id="classesList">
+            <p class="text-sm text-muted text-center py-4">No classes created yet</p>
+          </div>
+          <div id="classesShowMore" class="hidden border-t border-border p-3 text-center">
+            <button onclick="showMore('classes')" class="text-sm text-primary hover:text-primary/80 font-medium">
+              Show more
+            </button>
+          </div>
         </div>
       </div>
 
       <!-- Courses List -->
-      <div class="bg-card border border-border rounded-xl p-6">
-        <h3 class="font-semibold text-foreground mb-4">Courses</h3>
-        <div class="space-y-3" id="coursesList">
-          <p class="text-sm text-muted">No courses added yet</p>
+      <div class="bg-card border border-border rounded-xl overflow-hidden">
+        <button onclick="toggleSection('courses')" class="w-full p-6 flex items-center justify-between hover:bg-background/50 transition-all">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-warning/10 flex items-center justify-center">
+              <svg class="w-5 h-5 text-warning" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+              </svg>
+            </div>
+            <div class="text-left">
+              <h3 class="font-semibold text-foreground">Courses</h3>
+              <p class="text-sm text-muted" id="coursesCount">0 courses</p>
+            </div>
+          </div>
+          <svg id="coursesChevron" class="w-5 h-5 text-muted transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </button>
+        <div id="coursesSection" class="hidden border-t border-border">
+          <div class="p-4 space-y-2" id="coursesList">
+            <p class="text-sm text-muted text-center py-4">No courses added yet</p>
+          </div>
+          <div id="coursesShowMore" class="hidden border-t border-border p-3 text-center">
+            <button onclick="showMore('courses')" class="text-sm text-primary hover:text-primary/80 font-medium">
+              Show more
+            </button>
+          </div>
         </div>
       </div>
 
       <!-- Students List -->
-      <div class="bg-card border border-border rounded-xl p-6">
-        <h3 class="font-semibold text-foreground mb-4">Students</h3>
-        <div class="space-y-3" id="studentsList">
-          <p class="text-sm text-muted">No students registered yet</p>
+      <div class="bg-card border border-border rounded-xl overflow-hidden">
+        <button onclick="toggleSection('students')" class="w-full p-6 flex items-center justify-between hover:bg-background/50 transition-all">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+              <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+              </svg>
+            </div>
+            <div class="text-left">
+              <h3 class="font-semibold text-foreground">Students</h3>
+              <p class="text-sm text-muted" id="studentsCount">0 students</p>
+            </div>
+          </div>
+          <svg id="studentsChevron" class="w-5 h-5 text-muted transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </button>
+        <div id="studentsSection" class="hidden border-t border-border">
+          <div class="p-4 space-y-2" id="studentsList">
+            <p class="text-sm text-muted text-center py-4">No students registered yet</p>
+          </div>
+          <div id="studentsShowMore" class="hidden border-t border-border p-3 text-center">
+            <button onclick="showMore('students')" class="text-sm text-primary hover:text-primary/80 font-medium">
+              Show more
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -240,6 +328,136 @@
   </div>
 
   <script>
+    // Data storage
+    let allTeachers = [];
+    let allClasses = [];
+    let allCourses = [];
+    let allStudents = [];
+    
+    // Pagination state
+    const itemsPerPage = 5;
+    const displayedItems = {
+      teachers: itemsPerPage,
+      classes: itemsPerPage,
+      courses: itemsPerPage,
+      students: itemsPerPage
+    };
+
+    function toggleSection(section) {
+      const sectionEl = document.getElementById(section + 'Section');
+      const chevron = document.getElementById(section + 'Chevron');
+      
+      if (sectionEl.classList.contains('hidden')) {
+        sectionEl.classList.remove('hidden');
+        chevron.style.transform = 'rotate(180deg)';
+      } else {
+        sectionEl.classList.add('hidden');
+        chevron.style.transform = 'rotate(0deg)';
+      }
+    }
+
+    function showMore(section) {
+      displayedItems[section] += itemsPerPage;
+      renderSection(section);
+    }
+
+    function renderSection(section) {
+      let data, listEl, countEl, renderFn;
+      
+      switch(section) {
+        case 'teachers':
+          data = allTeachers;
+          listEl = document.getElementById('teachersList');
+          countEl = document.getElementById('teachersCount');
+          renderFn = renderTeacher;
+          break;
+        case 'classes':
+          data = allClasses;
+          listEl = document.getElementById('classesList');
+          countEl = document.getElementById('classesCount');
+          renderFn = renderClass;
+          break;
+        case 'courses':
+          data = allCourses;
+          listEl = document.getElementById('coursesList');
+          countEl = document.getElementById('coursesCount');
+          renderFn = renderCourse;
+          break;
+        case 'students':
+          data = allStudents;
+          listEl = document.getElementById('studentsList');
+          countEl = document.getElementById('studentsCount');
+          renderFn = renderStudent;
+          break;
+      }
+      
+      // Update count
+      countEl.textContent = `${data.length} ${section}`;
+      
+      if (data.length === 0) {
+        listEl.innerHTML = `<p class="text-sm text-muted text-center py-4">No ${section} added yet</p>`;
+        document.getElementById(section + 'ShowMore').classList.add('hidden');
+        return;
+      }
+      
+      // Render visible items
+      const visibleData = data.slice(0, displayedItems[section]);
+      listEl.innerHTML = visibleData.map(renderFn).join('');
+      
+      // Show/hide "Show more" button
+      const showMoreBtn = document.getElementById(section + 'ShowMore');
+      if (displayedItems[section] >= data.length) {
+        showMoreBtn.classList.add('hidden');
+      } else {
+        showMoreBtn.classList.remove('hidden');
+        showMoreBtn.querySelector('button').textContent = `Show more (${data.length - displayedItems[section]} remaining)`;
+      }
+    }
+
+    function renderTeacher(t) {
+      return `
+        <div class="flex items-center justify-between p-3 bg-background rounded-lg hover:bg-background/70 transition-all">
+          <div>
+            <p class="text-sm font-medium text-foreground">${t.fullName}</p>
+            <p class="text-xs text-muted">${t.email}</p>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderClass(c) {
+      return `
+        <div class="flex items-center justify-between p-3 bg-background rounded-lg hover:bg-background/70 transition-all">
+          <div>
+            <p class="text-sm font-medium text-foreground">${c.name} ${c.semester} - ${c.section}</p>
+            <p class="text-xs text-muted">${c.academicYear} • ${c.students.length} students</p>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderCourse(c) {
+      return `
+        <div class="flex items-center justify-between p-3 bg-background rounded-lg hover:bg-background/70 transition-all">
+          <div class="flex-1">
+            <p class="text-sm font-medium text-foreground">${c.name}</p>
+            <p class="text-xs text-muted">${c.code}${c.instructorRef ? ' • ' + c.instructorRef.fullName : ''} • ${c.totalSessions || 30} sessions</p>
+          </div>
+          <button onclick="editCourse('${c._id}', '${c.name}', ${c.totalSessions || 30})" class="text-xs text-primary hover:text-primary/80 px-2 py-1">Edit</button>
+        </div>
+      `;
+    }
+
+    function renderStudent(s) {
+      return `
+        <div class="flex items-center justify-between p-3 bg-background rounded-lg hover:bg-background/70 transition-all">
+          <div>
+            <p class="text-sm font-medium text-foreground">${s.fullName}</p>
+            <p class="text-xs text-muted">${s.rollNo} • ${s.email}</p>
+          </div>
+        </div>
+      `;
+    }
     function openModal(modalId) {
       document.getElementById(modalId).classList.remove('hidden');
       if (modalId === 'courseModal') {
@@ -313,65 +531,24 @@
           fetch('/admin/api/students')
         ]);
 
-        const [teachers, classes, courses, students] = await Promise.all([
+        [allTeachers, allClasses, allCourses, allStudents] = await Promise.all([
           teachersRes.json(),
           classesRes.json(),
           coursesRes.json(),
           studentsRes.json()
         ]);
 
-        // Update teachers list
-        const teachersList = document.getElementById('teachersList');
-        if (teachers.length > 0) {
-          teachersList.innerHTML = teachers.map(t => `
-            <div class="flex items-center justify-between p-3 bg-background rounded-lg">
-              <div>
-                <p class="text-sm font-medium text-foreground">${t.fullName}</p>
-                <p class="text-xs text-muted">${t.email}</p>
-              </div>
-            </div>
-          `).join('');
-        }
+        // Reset pagination
+        displayedItems.teachers = itemsPerPage;
+        displayedItems.classes = itemsPerPage;
+        displayedItems.courses = itemsPerPage;
+        displayedItems.students = itemsPerPage;
 
-        // Update classes list
-        const classesList = document.getElementById('classesList');
-        if (classes.length > 0) {
-          classesList.innerHTML = classes.map(c => `
-            <div class="flex items-center justify-between p-3 bg-background rounded-lg">
-              <div>
-                <p class="text-sm font-medium text-foreground">${c.name} ${c.semester} - ${c.section}</p>
-                <p class="text-xs text-muted">${c.academicYear} • ${c.students.length} students</p>
-              </div>
-            </div>
-          `).join('');
-        }
-
-        // Update courses list
-        const coursesList = document.getElementById('coursesList');
-        if (courses.length > 0) {
-          coursesList.innerHTML = courses.map(c => `
-            <div class="flex items-center justify-between p-3 bg-background rounded-lg">
-              <div class="flex-1">
-                <p class="text-sm font-medium text-foreground">${c.name}</p>
-                <p class="text-xs text-muted">${c.code}${c.instructorRef ? ' • ' + c.instructorRef.fullName : ''} • ${c.totalSessions || 30} sessions</p>
-              </div>
-              <button onclick="editCourse('${c._id}', '${c.name}', ${c.totalSessions || 30})" class="text-xs text-primary hover:text-primary/80 px-2 py-1">Edit</button>
-            </div>
-          `).join('');
-        }
-
-        // Update students list
-        const studentsList = document.getElementById('studentsList');
-        if (students.length > 0) {
-          studentsList.innerHTML = students.map(s => `
-            <div class="flex items-center justify-between p-3 bg-background rounded-lg">
-              <div>
-                <p class="text-sm font-medium text-foreground">${s.fullName}</p>
-                <p class="text-xs text-muted">${s.rollNo} • ${s.email}</p>
-              </div>
-            </div>
-          `).join('');
-        }
+        // Render all sections
+        renderSection('teachers');
+        renderSection('classes');
+        renderSection('courses');
+        renderSection('students');
       } catch (error) {
         console.error('Error loading data:', error);
       }
