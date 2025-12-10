@@ -1,5 +1,5 @@
 const router = require('express').Router();
-const { Admin, Class, Course, Student, Attendance } = require('../models');
+const { Admin, Class, Course, Student, Attendance, Settings } = require('../models');
 const { isAuthenticated, hasRole } = require('../middleware/auth');
 
 // Get teacher's classes and courses
@@ -93,10 +93,21 @@ router.post('/api/mark-attendance', isAuthenticated, hasRole('admin', 'teacher')
       });
     }
     
-    // Determine status based on time (example: late after 9:15 AM)
+    // Fetch user settings to get lateCutoffTime
+    const userModel = req.session.userModel || 'Teacher';
+    const userId = req.session.userId;
+    
+    let settings = await Settings.findOne({ userId, userModel }).lean();
+    if (!settings) {
+      // Create default settings if not found
+      settings = await Settings.create({ userId, userModel });
+    }
+    
+    // Determine status based on user's configured time
     const now = new Date();
     const cutoffTime = new Date(now);
-    cutoffTime.setHours(9, 15, 0, 0);
+    const [cutoffHours, cutoffMinutes] = settings.lateCutoffTime.split(':');
+    cutoffTime.setHours(parseInt(cutoffHours), parseInt(cutoffMinutes), 0, 0);
     const status = now > cutoffTime ? 'late' : 'present';
     
     // Create attendance record
